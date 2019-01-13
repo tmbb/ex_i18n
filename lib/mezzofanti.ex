@@ -3,7 +3,8 @@ defmodule Mezzofanti do
   Documentation for Mezzofanti.
   """
 
-  alias Mezzofanti.MezzofantiTranslation
+  alias Mezzofanti.Translation
+  alias Mezzofanti.Gettext.GettextFormatter
 
   defmacro __using__(_opts) do
     quote do
@@ -34,7 +35,7 @@ defmodule Mezzofanti do
     relative_path = Path.relative_to_cwd(file)
 
     translation =
-      MezzofantiTranslation.new(
+      Translation.new(
         string: string,
         domain: domain,
         comment: comment,
@@ -62,5 +63,10 @@ defmodule Mezzofanti do
     applications = for {app, _, _} <- Application.loaded_applications(), do: app
     modules = Enum.flat_map(applications, fn app -> Application.spec(app, :modules) end)
     Enum.flat_map(modules, &get_mezzofanti_translations/1)
+  end
+
+  def persist_translations(path) do
+    translations = get_all_mezzofanti_translations()
+    GettextFormatter.write_to_file!(path, translations)
   end
 end
