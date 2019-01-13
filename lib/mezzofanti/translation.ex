@@ -4,6 +4,7 @@ defmodule Mezzofanti.Translation do
   @type t() :: %__MODULE__{}
 
   defstruct string: nil,
+            translated: nil,
             file: nil,
             line: nil,
             module: nil,

@@ -1,5 +1,6 @@
 defmodule Mezzofanti.Compiler do
   @moduledoc false
+  use Mezzofanti
 
   @doc """
   Runs the given function with the given compiler options

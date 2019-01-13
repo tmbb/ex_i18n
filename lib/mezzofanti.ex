@@ -4,7 +4,6 @@ defmodule Mezzofanti do
   """
 
   alias Mezzofanti.Translation
-  alias Mezzofanti.Gettext.GettextFormatter
 
   defmacro __using__(_opts) do
     quote do
@@ -49,24 +48,5 @@ defmodule Mezzofanti do
     quote do
       Mezzofanti.Worker.translate(unquote(string), unquote(variables))
     end
-  end
-
-  defp get_mezzofanti_translations(module) do
-    try do
-      module.__mezzofanti_translations__()
-    rescue
-      UndefinedFunctionError -> []
-    end
-  end
-
-  def get_all_mezzofanti_translations() do
-    applications = for {app, _, _} <- Application.loaded_applications(), do: app
-    modules = Enum.flat_map(applications, fn app -> Application.spec(app, :modules) end)
-    Enum.flat_map(modules, &get_mezzofanti_translations/1)
-  end
-
-  def persist_translations(path) do
-    translations = get_all_mezzofanti_translations()
-    GettextFormatter.write_to_file!(path, translations)
   end
 end

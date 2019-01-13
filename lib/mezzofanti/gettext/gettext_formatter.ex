@@ -23,11 +23,12 @@ defmodule Mezzofanti.Gettext.GettextFormatter do
   #     msgstr translated-string
   #
   defp format_translation_as_iodata(%Translation{} = translation) do
+    translated = if translation.translated, do: translation.translated, else: ""
     extracted_comments = comment_with(translation.comment, "#.")
     flag = comment_with(translation.flag, "#,")
     source = ["#: ", translation.file, ":", to_string(translation.line), "\n"]
     msgid = ["msgid ", inspect(translation.string), "\n"]
-    msgstr = ~s'msgstr ""\n'
+    msgstr = ["msgstr ", inspect(translated), "\n"]
 
     [
       "\n",
@@ -39,18 +40,19 @@ defmodule Mezzofanti.Gettext.GettextFormatter do
     ]
   end
 
-  defp format_translations_as_iodata(translations) do
-    Enum.map(translations, &format_translation_as_iodata/1)
+  defp format_translations_as_iodata(header, translations) do
+    commented_header = if header, do: [comment_with(header, "##"), "\n"], else: []
+    [commented_header, Enum.map(translations, &format_translation_as_iodata/1)]
   end
 
-  def format_translations(translations) do
+  def format_translations(header \\ nil, translations) do
     translations
-    |> format_translations_as_iodata()
+    |> format_translations_as_iodata(header)
     |> IO.iodata_to_binary()
   end
 
-  def write_to_file!(path, translations) do
-    iodata = format_translations_as_iodata(translations)
+  def write_to_file!(path, header \\ nil, translations) do
+    iodata = format_translations_as_iodata(header, translations)
     File.write!(path, iodata)
   end
 end
