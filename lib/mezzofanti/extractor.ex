@@ -42,10 +42,7 @@ defmodule Mezzofanti.Extractor do
   """
   def extract_all_translations() do
     applications = for {app, _, _} <- Application.loaded_applications(), do: app
-    IO.inspect(applications, label: "applications")
-    IO.inspect(:mezzofanti in applications, label: ":mezzofanti in applications")
     modules = Enum.flat_map(applications, fn app -> Application.spec(app, :modules) end)
-    IO.inspect(__MODULE__ in modules, label: "__MODULE__ in modules")
     Enum.flat_map(modules, &extract_translations_from_module/1)
   end
 

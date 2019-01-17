@@ -28,6 +28,7 @@ defmodule Mezzofanti do
     file = __CALLER__.file
     module = __CALLER__.module
     {comment, options} = Keyword.pop(options, :comment)
+    {context, options} = Keyword.pop(options, :context)
     {domain, _options} = Keyword.pop(options, :domain)
     variables = Keyword.get(options, :variables, [])
 
@@ -38,6 +39,7 @@ defmodule Mezzofanti do
         string: string,
         domain: domain,
         comment: comment,
+        context: context,
         file: relative_path,
         line: line,
         module: module

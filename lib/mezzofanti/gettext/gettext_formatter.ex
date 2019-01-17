@@ -24,17 +24,27 @@ defmodule Mezzofanti.Gettext.GettextFormatter do
   #
   defp format_translation_as_iodata(%Translation{} = translation) do
     translated = if translation.translated, do: translation.translated, else: ""
-    extracted_comments = comment_with(translation.comment, "#.")
     flag = comment_with(translation.flag, "#,")
     source = ["#: ", translation.file, ":", to_string(translation.line), "\n"]
     msgid = ["msgid ", inspect(translation.string), "\n"]
     msgstr = ["msgstr ", inspect(translated), "\n"]
+    # The comments are not used for message disambiguation.
+    # They are only notes for translators
+    extracted_comments = comment_with(translation.comment, "#.")
+    # Unlike comments, the context is used for message disambiguation
+    msgctxt =
+      if translation.context do
+        ["msgctxt ", inspect(translation.context), "\n"]
+      else
+        []
+      end
 
     [
       "\n",
       extracted_comments,
       flag,
       source,
+      msgctxt,
       msgid,
       msgstr
     ]

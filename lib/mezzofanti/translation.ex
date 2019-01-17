@@ -9,6 +9,7 @@ defmodule Mezzofanti.Translation do
             line: nil,
             module: nil,
             comment: nil,
+            context: nil,
             domain: nil,
             flag: nil
 
