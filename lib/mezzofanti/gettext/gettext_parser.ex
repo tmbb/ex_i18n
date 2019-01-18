@@ -74,12 +74,8 @@ defmodule Mezzofanti.Gettext.GettextParser do
     |> unwrap_and_tag(tag)
   end
 
-  blank_line = whitespace |> concat(newline)
-
-  blank_lines =
-    whitespace
-    |> concat(newline)
-    |> repeat(blank_line)
+  blank_line = whitespace |> concat(ascii_char([?\n]))
+  blank_lines = repeat(blank_line)
 
   integer =
     ascii_string([?0..?9], min: 1)
@@ -131,11 +127,18 @@ defmodule Mezzofanti.Gettext.GettextParser do
   translation =
     repeat(comment)
     |> concat(text_fields)
-    # |> ignore(optional(blank_lines))
+    |> ignore(blank_lines)
     |> reduce(:make_translation)
+
+  translations =
+    blank_lines
+    |> optional()
+    |> ignore()
+    |> repeat(translation)
 
   defparsecp(:translation, translation)
   defparsecp(:reference, reference)
+  defparsecp(:translations, translations)
 
   @doc false
   def parse_reference(text) do
@@ -147,5 +150,11 @@ defmodule Mezzofanti.Gettext.GettextParser do
   def parse_single_translation(text) do
     {:ok, [translation], _, _, _, _} = translation(text)
     translation
+  end
+
+  @doc false
+  def parse_translations(text) do
+    {:ok, translations, _, _, _, _} = translations(text)
+    translations
   end
 end
