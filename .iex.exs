@@ -1,0 +1,1 @@
+alias Mezzofanti.Icu.IcuParser

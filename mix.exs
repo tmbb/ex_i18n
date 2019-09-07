@@ -21,7 +21,12 @@ defmodule Mezzofanti.MixProject do
 
   # Run "mix help deps" to learn about dependencies.
   defp deps do
-    [{:nimble_parsec, "~> 0.5.0"}]
+    [
+      {:nimble_parsec, "~> 0.5.0"},
+      {:ex_cldr, "~> 2.2"},
+      {:jason, "~> 1.1"},
+      {:ex_cldr_numbers, "~> 2.1"}
+    ]
   end
 
   defp elixirc_paths(env) when env in [:test, :dev], do: ["lib", "test/fixtures"]
