@@ -3,9 +3,9 @@
 use Mix.Config
 
 config :mezzofanti,
-  backend: Mezzofanti.ExampleBackend
+  backend: ExampleMezzofantiBackend
 
 config :ex_cldr,
   default_locale: "en",
-  default_backend: ExampleBackend.Cldr,
+  default_backend: ExampleClrdBackend,
   json_library: Jason

@@ -70,14 +70,14 @@ defmodule Mezzofanti.Pseudolocalization.HtmlPseudolocalization do
   # An HTML entity always starts with a literal ampersand character
   html_entity_codepoint =
     string("&#")
-      |> choice([
-        # Decimal (no need for a prefix)
-        decimal_encoding,
-        # Hexadecimal (as indicated by the `x` prefix)
-        string("x") |> concat(hex_encoding)
-      ])
-      # In any case, it is terminated by a semicolon
-      |> string(";")
+    |> choice([
+      # Decimal (no need for a prefix)
+      decimal_encoding,
+      # Hexadecimal (as indicated by the `x` prefix)
+      string("x") |> concat(hex_encoding)
+    ])
+    # In any case, it is terminated by a semicolon
+    |> string(";")
 
   html_entity =
     choice([

@@ -8,10 +8,11 @@ defmodule Mezzofanti.Translator do
 
     case Config.backend() do
       nil ->
+        # Interpolate the message with the default locale
         Cldr.Message.format_list(translation.parsed, variables, locale: locale)
 
       module ->
-        module.translate_from_hash(hash, locale, variables)
+        module.translate_from_hash(hash, locale, variables, translation)
     end
   end
 end

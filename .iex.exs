@@ -1,2 +1,4 @@
 alias Mezzofanti.Gettext.GettextBackend
+alias Mezzofanti.Backends.GettextBackend.Merger
+alias Mezzofanti.Fixtures.ExampleModule
 import Mezzofanti.Pseudolocalization

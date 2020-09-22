@@ -25,7 +25,7 @@ defmodule Mezzofanti.Backends.GettextBackend do
           parsed_translation = Message.parse_message!(message.translated)
 
           quote do
-            def unquote(fun_name)(unquote(message.hash), unquote(locale_name), variables) do
+            def unquote(fun_name)(unquote(message.hash), unquote(locale_name), variables, _translation) do
               Cldr.Message.format_list(
                 unquote(Macro.escape(parsed_translation)),
                 variables,
@@ -45,7 +45,7 @@ defmodule Mezzofanti.Backends.GettextBackend do
         parsed_translation = Message.parse_message!(message.string)
 
         quote do
-          def unquote(fun_name)(unquote(message.hash), _, variables) do
+          def unquote(fun_name)(unquote(message.hash), _, variables, _translation) do
             Cldr.Message.format_list(
               unquote(Macro.escape(parsed_translation)),
               variables,
@@ -64,7 +64,7 @@ defmodule Mezzofanti.Backends.GettextBackend do
 
         quote do
           # This clause is triggered by the `"pseudo`" locale.
-          def unquote(fun_name)(unquote(message.hash), "pseudo", variables) do
+          def unquote(fun_name)(unquote(message.hash), "pseudo", variables, _translation) do
             translated =
               Cldr.Message.format_list(
                 unquote(Macro.escape(parsed_translation)),
@@ -82,31 +82,31 @@ defmodule Mezzofanti.Backends.GettextBackend do
         end
       end
 
-      html_pseudolocalization_function_clauses =
-        for message <- original_messages do
-          # Store the parsed translation;
-          # Now even empty messages will be encoded.
-          parsed_translation = Message.parse_message!(message.string)
+    html_pseudolocalization_function_clauses =
+      for message <- original_messages do
+        # Store the parsed translation;
+        # Now even empty messages will be encoded.
+        parsed_translation = Message.parse_message!(message.string)
 
-          quote do
-            # This clause is triggered by the `"pseudo_html`" locale.
-            def unquote(fun_name)(unquote(message.hash), "pseudo_html", variables) do
-              translated =
-                Cldr.Message.format_list(
-                  unquote(Macro.escape(parsed_translation)),
-                  variables,
-                  # Don't specify a locale. Use the default one.
-                  []
-                )
+        quote do
+          # This clause is triggered by the `"pseudo_html`" locale.
+          def unquote(fun_name)(unquote(message.hash), "pseudo_html", variables, _translation) do
+            translated =
+              Cldr.Message.format_list(
+                unquote(Macro.escape(parsed_translation)),
+                variables,
+                # Don't specify a locale. Use the default one.
+                []
+              )
 
-              # The variable `text` is an iolist and not a string
-              # Our pseudolocalization functions expect a string for further processing.
-              text = to_string(translated)
-              # Use fully qualified module name in quoted expression
-              Mezzofanti.Pseudolocalization.HtmlPseudolocalization.pseudolocalize(text)
-            end
+            # The variable `text` is an iolist and not a string
+            # Our pseudolocalization functions expect a string for further processing.
+            text = to_string(translated)
+            # Use fully qualified module name in quoted expression
+            Mezzofanti.Pseudolocalization.HtmlPseudolocalization.pseudolocalize(text)
           end
         end
+      end
 
     # Make sure the gettext files are declared as external resources,
     # so that changing them triggers a recompilation of the Mezzofanti backend.
@@ -158,6 +158,17 @@ defmodule Mezzofanti.Backends.GettextBackend do
     locale_directories
     |> Enum.map(&translations_from_locale/1)
     |> Enum.into(%{})
+  end
+
+  def grouped_messages_from_directory(directory) do
+    files =
+      directory
+      |> File.ls!()
+      |> Enum.map(fn f -> Path.join(directory, f) end)
+      |> Enum.reject(&File.dir?/1)
+      |> filter_pot_files()
+
+    Enum.map(files, fn f -> {f, GettextParser.messages_from_file(f)} end)
   end
 
   def translations_from_files(directory) do

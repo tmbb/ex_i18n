@@ -1,6 +1,6 @@
 defmodule Mix.Tasks.Mezzofanti.Extract do
   use Mix.Task
-  alias Mezzofanti.Extractor
+  alias Mezzofanti.Backends.GettextBackend.Extractor
 
   @recursive true
 
@@ -15,6 +15,8 @@ defmodule Mix.Tasks.Mezzofanti.Extract do
     Mix.Tasks.App.Start.run([])
     # Generate the `mezzofanti` directory where messages will go.
     Extractor.make_messages_priv_dir!()
+    # Remove old POT files
+    Extractor.clean_pot_files("priv/mezzofanti")
     # Extract all messages and persiste in the POT file.
     Extractor.extract_and_persist_as_pot("priv/mezzofanti/")
   end
