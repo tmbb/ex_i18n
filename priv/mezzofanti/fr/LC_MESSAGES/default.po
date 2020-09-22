@@ -13,10 +13,10 @@
 #: test/fixtures/test_a.ex:9
 msgctxt "a message"
 msgid "message #2"
-msgstr ""
+msgstr "méssage numero deux"
 
 #. 'fair' as in 'just'
 #: test/fixtures/test_a.ex:5
 msgctxt ""
 msgid "message #1"
-msgstr ""
+msgstr "méssage numero un"

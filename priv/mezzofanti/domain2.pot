@@ -10,13 +10,7 @@
 
 
 #. 
-#: test/fixtures/test_a.ex:9
-msgctxt "a message"
-msgid "message #2"
-msgstr ""
-
-#. 'fair' as in 'just'
-#: test/fixtures/test_a.ex:5
+#: test/fixtures/test_a.ex:13
 msgctxt ""
-msgid "message #1"
+msgid "message #3"
 msgstr ""

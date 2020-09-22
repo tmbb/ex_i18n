@@ -1,17 +1,15 @@
 defmodule TestA do
   use Mezzofanti
 
-  def f(_x) do
-    translate("fair", comment: "'fair' as in 'just'")
+  def f() do
+    translate("message #1", comment: "'fair' as in 'just'")
   end
 
-  def g(_x) do
-    translate("unfair",
-      comment: "'unfair' as in 'unjust', not as a 'fair' that has been erased from reality"
-    )
+  def g() do
+    translate("message #2", context: "a message")
   end
 
-  def h(_x) do
-    translate("ok", comment: "do you need context for this one?")
+  def h() do
+    translate("message #3", domain: "domain2")
   end
 end

@@ -1,7 +1,7 @@
 defmodule Mezzofanti.Gettext.GettextFormatter do
   @moduledoc false
 
-  alias Mezzofanti.Translation
+  alias Mezzofanti.Message
 
   defp comment_with(nil, _prefix), do: []
 
@@ -22,19 +22,25 @@ defmodule Mezzofanti.Gettext.GettextFormatter do
   #     msgid untranslated-string
   #     msgstr translated-string
   #
-  defp format_translation_as_iodata(%Translation{} = translation) do
-    translated = if translation.translated, do: translation.translated, else: ""
-    flag = comment_with(translation.flag, "#,")
-    source = ["#: ", translation.file, ":", to_string(translation.line), "\n"]
-    msgid = ["msgid ", inspect(translation.string), "\n"]
-    msgstr = ["msgstr ", inspect(translated), "\n"]
+  defp format_message_as_iodata(%Message{} = message) do
+    translated = if message.translated, do: message.translated, else: ""
+
+    flag =
+      case message.flag do
+        nil -> ""
+        _ -> comment_with(message.flag, "#,")
+      end
+
+    source = ["#: ", message.file, ":", to_string(message.line), "\n"]
+    msgid = ["msgid ", encode_as_multiple_strings(message.string), "\n"]
+    msgstr = ["msgstr ", encode_as_multiple_strings(translated), "\n"]
     # The comments are not used for message disambiguation.
     # They are only notes for translators
-    extracted_comments = comment_with(translation.comment, "#.")
+    extracted_comments = comment_with(message.comment, "#.")
     # Unlike comments, the context is used for message disambiguation
     msgctxt =
-      if translation.context do
-        ["msgctxt ", inspect(translation.context), "\n"]
+      if message.context do
+        ["msgctxt ", inspect(message.context), "\n"]
       else
         []
       end
@@ -50,19 +56,37 @@ defmodule Mezzofanti.Gettext.GettextFormatter do
     ]
   end
 
-  defp format_translations_as_iodata(header, translations) do
+  defp format_messages_as_iodata(header, messages) do
     commented_header = if header, do: [comment_with(header, "##"), "\n"], else: []
-    [commented_header, Enum.map(translations, &format_translation_as_iodata/1)]
+    [commented_header, Enum.map(messages, &format_message_as_iodata/1)]
   end
 
-  def format_translations(header \\ nil, translations) do
-    translations
-    |> format_translations_as_iodata(header)
+  def format_messages(header \\ nil, messages) do
+    messages
+    |> format_messages_as_iodata(header)
     |> IO.iodata_to_binary()
   end
 
-  def write_to_file!(path, header \\ nil, translations) do
-    iodata = format_translations_as_iodata(header, translations)
+  defp encode_as_multiple_strings(""), do: "\"\""
+
+  defp encode_as_multiple_strings(string) do
+    lines = String.split(string, "\n")
+
+    case lines do
+      [line] ->
+        inspect(line)
+
+      _ ->
+        encoded_lines = Enum.map(["" | String.split(string, "\n")], &inspect/1)
+        Enum.join(encoded_lines, "\n")
+    end
+  end
+
+  @doc """
+  Write messages to a `.PO` or `.POT` file.
+  """
+  def write_to_file!(path, header \\ nil, messages) do
+    iodata = format_messages_as_iodata(header, messages)
     File.write!(path, iodata)
   end
 end

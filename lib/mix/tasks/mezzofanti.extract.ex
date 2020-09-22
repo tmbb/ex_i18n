@@ -4,18 +4,18 @@ defmodule Mix.Tasks.Mezzofanti.Extract do
 
   @recursive true
 
-  @shortdoc "Extracts translations from source code"
+  @shortdoc "Extracts messages from source code"
 
   @moduledoc """
-  Extracts translations from source code.
+  Extracts messages from source code.
   """
 
   def run(_args) do
     # Start all registered apps.
     Mix.Tasks.App.Start.run([])
-    # Generate the `mezzofanti` directory where translations will go.
-    Extractor.make_translations_priv_dir!()
-    # Extract all translations and persiste in the POT file.
-    Extractor.extract_and_persist_as_pot("priv/mezzofanti/default.pot")
+    # Generate the `mezzofanti` directory where messages will go.
+    Extractor.make_messages_priv_dir!()
+    # Extract all messages and persiste in the POT file.
+    Extractor.extract_and_persist_as_pot("priv/mezzofanti/")
   end
 end

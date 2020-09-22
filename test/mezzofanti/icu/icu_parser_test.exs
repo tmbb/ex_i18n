@@ -10,7 +10,7 @@ defmodule Mezzofanti.Icu.IcuParserTest do
       assert parse_message("{var ,   date}") == {:ok, [{:date, [variable: "var"]}]}
     end
 
-    test "with valid params (vaying amount of whitespace)" do
+    test "with valid params (varying amount of whitespace)" do
       for param <- ~w(short long full default) do
         assert parse_message("{var,date,#{param}}") ==
                  {:ok, [{:date, [variable: "var", parameter: param]}]}

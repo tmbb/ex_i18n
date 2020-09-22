@@ -1,7 +1,7 @@
 defmodule Mezzofanti.Gettext.GettextParser do
   @moduledoc false
   import NimbleParsec
-  alias Mezzofanti.Translation
+  alias Mezzofanti.Message
 
   #  The format of an entry in a `.po` file is the following:
   #
@@ -25,9 +25,12 @@ defmodule Mezzofanti.Gettext.GettextParser do
     List.to_string(parts)
   end
 
-  def make_translation(parts) do
+  def make_multiline_string(["" | lines]), do: Enum.join(lines, "\n")
+  def make_multiline_string(lines), do: Enum.join(lines, "\n")
+
+  def make_message(parts) do
     deduped = Enum.dedup_by(parts, fn {tag, _value} -> tag end)
-    Translation.new(deduped)
+    Message.new(deduped)
   end
 
   newline =
@@ -37,13 +40,13 @@ defmodule Mezzofanti.Gettext.GettextParser do
     ])
 
   line = times(utf8_char(not: ?\n), min: 1) |> ignore(newline)
+  maybe_empty_line = repeat(utf8_char(not: ?\n)) |> ignore(newline)
 
   whitespace_chars = [?\s, ?\t, ?\f]
 
   whitespace = repeat(ascii_char(whitespace_chars))
 
-  # TODO: extend to multiline strings
-  text =
+  gettext_string =
     ignore(ascii_char([?"]))
     |> repeat(
       choice([
@@ -54,11 +57,31 @@ defmodule Mezzofanti.Gettext.GettextParser do
     |> ignore(ascii_char([?"]))
     |> reduce(:make_string)
 
+  text =
+    gettext_string
+    |> repeat(
+      newline
+      |> concat(whitespace)
+      |> ignore()
+      |> concat(gettext_string)
+    )
+    |> reduce(:make_multiline_string)
+
   lines = fn marker, tag ->
     marker
     |> optional(ascii_char([?\s]))
     |> ignore()
     |> wrap(line)
+    |> times(min: 1)
+    |> reduce(:merge_lines)
+    |> unwrap_and_tag(tag)
+  end
+
+  maybe_empty_lines = fn marker, tag ->
+    marker
+    |> optional(ascii_char([?\s]))
+    |> ignore()
+    |> wrap(maybe_empty_line)
     |> times(min: 1)
     |> reduce(:merge_lines)
     |> unwrap_and_tag(tag)
@@ -90,9 +113,10 @@ defmodule Mezzofanti.Gettext.GettextParser do
     |> unwrap_and_tag(integer, :line)
     |> ignore(whitespace |> concat(newline))
 
-  extracted_comments = lines.(string("#."), :comment)
-  msgid_untranslated_string = lines.(string("#|"), :msgid_untranslated)
-  flag = lines.(string("#,"), :flag)
+  extracted_comments = maybe_empty_lines.(string("#."), :comment)
+  msgid_untranslated_string = maybe_empty_lines.(string("#|"), :msgid_untranslated)
+  flag = maybe_empty_lines.(string("#,"), :flag)
+  header = maybe_empty_lines.(string("##"), :header)
 
   msgid = text_field.(string("msgid"), :string)
   msgstr = text_field.(string("msgstr"), :translated)
@@ -124,37 +148,62 @@ defmodule Mezzofanti.Gettext.GettextParser do
     |> concat(msgid)
     |> concat(msgstr)
 
-  translation =
+  message =
     repeat(comment)
     |> concat(text_fields)
     |> ignore(blank_lines)
-    |> reduce(:make_translation)
+    |> reduce(:make_message)
 
-  translations =
+  messages =
     blank_lines
     |> optional()
     |> ignore()
-    |> repeat(translation)
+    |> repeat(message)
 
-  defparsecp(:translation, translation)
+  file =
+    header
+    |> optional()
+    |> ignore()
+    |> concat(messages)
+
+  defparsecp(:message, message)
   defparsecp(:reference, reference)
-  defparsecp(:translations, translations)
+  defparsecp(:messages, messages)
+  defparsecp(:file, file)
 
   @doc false
-  def parse_reference(text) do
+  def parse_reference!(text) do
     {:ok, reference, _, _, _, _} = reference(text)
     reference
   end
 
   @doc false
-  def parse_single_translation(text) do
-    {:ok, [translation], _, _, _, _} = translation(text)
-    translation
+  def parse_single_message!(text) do
+    {:ok, [message], _, _, _, _} = message(text)
+    message
   end
 
   @doc false
-  def parse_translations(text) do
-    {:ok, translations, _, _, _, _} = translations(text)
-    translations
+  def parse_messages!(text) do
+    {:ok, messages, _, _, _, _} = messages(text)
+    messages
+  end
+
+  @doc false
+  def parse_file!(text) do
+    {:ok, messages, _, _, _, _} = file(text)
+    messages
+  end
+
+  def messages_from_file(path) do
+    domain =
+      path
+      |> Path.basename()
+      |> Path.rootname()
+
+    contents = File.read!(path)
+    messages = parse_file!(contents)
+
+    Enum.map(messages, fn m -> Message.set_domain(m, domain) end)
   end
 end

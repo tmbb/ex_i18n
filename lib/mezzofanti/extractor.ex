@@ -3,14 +3,14 @@ defmodule Mezzofanti.Extractor do
 
   alias Mezzofanti.Gettext.GettextFormatter
 
-  @translations_priv_dir "priv/mezzofanti"
+  @messages_priv_dir "priv/mezzofanti"
 
   @pot_header """
   This file is a PO Template file.
 
   `msgid`s here are often extracted from source code.
-  Add new translations manually only if they're dynamic
-  translations that can't be statically extracted.
+  Add new messages manually only if they're dynamic
+  messages that can't be statically extracted.
 
   Run `mix mezzofanti.extract` to bring this file up to
   date. Leave `msgstr`s empty as changing them here as no
@@ -28,9 +28,9 @@ defmodule Mezzofanti.Extractor do
   to merge POT files into PO files.\
   """
 
-  defp extract_translations_from_module(module) do
+  defp extract_messages_from_module(module) do
     try do
-      module.__mezzofanti_translations__()
+      module.__mezzofanti_messages__()
     rescue
       UndefinedFunctionError ->
         []
@@ -38,38 +38,65 @@ defmodule Mezzofanti.Extractor do
   end
 
   @doc """
-  Extract all translations from all the modules in all the applications.
+  Extract all messages from all the modules in all the applications.
   """
-  def extract_all_translations() do
+  def extract_all_messages() do
     applications = for {app, _, _} <- Application.loaded_applications(), do: app
     modules = Enum.flat_map(applications, fn app -> Application.spec(app, :modules) end)
-    Enum.flat_map(modules, &extract_translations_from_module/1)
+    Enum.flat_map(modules, &extract_messages_from_module/1)
   end
 
   @doc """
-  Persist the translations into a file.
+  Group messages by domain.
+
+  That's how Gettext groups them by default (one domain per file).
+  We'll follow this aproach here, by lack of a better option.
   """
-  def persist_translations(path, header, translations) do
-    GettextFormatter.write_to_file!(path, header, translations)
+  def group_messages_by_domain(messages) do
+    Enum.group_by(messages, fn t -> t.domain end)
+  end
+
+  # ------------------------------------------
+  # Persist messages as PO(T) files
+  # ------------------------------------------
+
+  @doc """
+  Extract and persist all messages into a directory of POT files.
+  """
+  def extract_and_persist_as_pot(directory_path) do
+    extract_and_persist_with_header_and_extension(
+      directory_path,
+      @pot_header,
+      ".pot"
+    )
   end
 
   @doc """
-  Extract and persist all translations into a POT file.
+  Extract and persist all messages into a .PO file.
   """
-  def extract_and_persist_as_pot(path) do
-    translations = extract_all_translations()
-    persist_translations(path, @pot_header, translations)
+  def extract_and_persist_as_po(directory_path) do
+    extract_and_persist_with_header_and_extension(
+      directory_path,
+      @po_header,
+      ".po"
+    )
   end
 
-  @doc """
-  Extract and persist all translations into a PO file.
-  """
-  def extract_and_persist_as_po(path) do
-    translations = extract_all_translations()
-    persist_translations(path, @po_header, translations)
+  # Encapsulate the logic of
+  defp extract_and_persist_with_header_and_extension(directory_path, header, ext) do
+    messages = extract_all_messages()
+    domains = group_messages_by_domain(messages)
+    File.mkdir_p!(directory_path)
+
+    for {filename, messages} <- domains do
+      path = Path.join(directory_path, filename <> ext)
+      GettextFormatter.write_to_file!(path, header, messages)
+    end
+
+    :ok
   end
 
-  def make_translations_priv_dir!() do
-    File.mkdir_p!(@translations_priv_dir)
+  def make_messages_priv_dir!() do
+    File.mkdir_p!(@messages_priv_dir)
   end
 end

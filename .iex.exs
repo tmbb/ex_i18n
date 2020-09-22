@@ -1,1 +1,2 @@
-alias Mezzofanti.Icu.IcuParser
+alias Mezzofanti.Gettext.GettextBackend
+import Mezzofanti.Pseudolocalization
