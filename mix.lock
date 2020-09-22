@@ -12,4 +12,5 @@
   "ex_money": {:hex, :ex_money, "4.4.3", "4fa0f96abb4bd8fb0015139c56e3e0bbbc1336f2871b4a749eb594adcac81632", [:mix], [{:decimal, "~> 1.6", [hex: :decimal, repo: "hexpm", optional: false]}, {:ex_cldr, "~> 2.12", [hex: :ex_cldr, repo: "hexpm", optional: false]}, {:ex_cldr_currencies, "~> 2.4", [hex: :ex_cldr_currencies, repo: "hexpm", optional: false]}, {:ex_cldr_numbers, "~> 2.6", [hex: :ex_cldr_numbers, repo: "hexpm", optional: false]}, {:jason, "~> 1.0", [hex: :jason, repo: "hexpm", optional: true]}, {:nimble_parsec, "~> 0.5", [hex: :nimble_parsec, repo: "hexpm", optional: false]}, {:phoenix_html, "~> 2.0", [hex: :phoenix_html, repo: "hexpm", optional: true]}], "hexpm"},
   "jason": {:hex, :jason, "1.2.2", "ba43e3f2709fd1aa1dce90aaabfd039d000469c05c56f0b8e31978e03fa39052", [:mix], [{:decimal, "~> 1.0 or ~> 2.0", [hex: :decimal, repo: "hexpm", optional: true]}], "hexpm"},
   "nimble_parsec": {:hex, :nimble_parsec, "0.6.0", "32111b3bf39137144abd7ba1cce0914533b2d16ef35e8abc5ec8be6122944263", [:mix], [], "hexpm"},
+  "stream_data": {:hex, :stream_data, "0.5.0", "b27641e58941685c75b353577dc602c9d2c12292dd84babf506c2033cd97893e", [:mix], [], "hexpm"},
 }

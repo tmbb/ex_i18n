@@ -30,7 +30,8 @@ defmodule Mezzofanti.MixProject do
       {:ex_cldr_dates_times, "~> 2.2"},
       {:ex_money, "~> 4.0"},
       {:ex_cldr_units, "~> 2.0"},
-      {:ex_cldr_lists, "~> 2.3"}
+      {:ex_cldr_lists, "~> 2.3"},
+      {:stream_data, "~> 0.5.0", only: [:dev, :test]}
     ]
   end
 
