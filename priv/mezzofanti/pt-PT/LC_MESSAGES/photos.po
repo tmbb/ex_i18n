@@ -9,7 +9,7 @@
 
 
 #. 
-#: test/fixtures/example_module.ex:13
+#: test/fixtures/example_module.ex:24
 msgctxt ""
 msgid ""
 "{nr_photos, plural,"
@@ -17,7 +17,3 @@ msgid ""
 "  =1 {{user} took one photo.}"
 "  other {{user} took # photos.}}"
 msgstr ""
-"{nr_photos, plural,"
-"  =0 {{user} não tirou fotografias nenhumas.}"
-"  =1 {{user} tirou uma fotografia}"
-"  other {{user} tirou # fotografias}}"

@@ -9,13 +9,19 @@
 
 
 #. 
-#: test/fixtures/example_module.ex:9
+#: test/fixtures/example_module.ex:39
+msgctxt ""
+msgid "This message contains <strong>html tags</strong> &amp; nasty stuff..."
+msgstr ""
+
+#. 
+#: test/fixtures/example_module.ex:18
 msgctxt "a message"
 msgid "Hello {guest}!"
 msgstr ""
 
 #. 
-#: test/fixtures/example_module.ex:5
+#: test/fixtures/example_module.ex:10
 msgctxt ""
 msgid "Hello world!"
 msgstr ""

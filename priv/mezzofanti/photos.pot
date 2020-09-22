@@ -10,7 +10,7 @@
 
 
 #. 
-#: test/fixtures/example_module.ex:13
+#: test/fixtures/example_module.ex:24
 msgctxt ""
 msgid ""
 "{nr_photos, plural,"

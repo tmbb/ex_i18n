@@ -108,6 +108,62 @@ defmodule Mezzofanti.Backends.GettextBackend do
         end
       end
 
+    message_not_extracted_function_clauses =
+      quote do
+        # Text pseudolocalization
+        def unquote(fun_name)(_, "pseudo_html", variables, message) do
+          # Parse the string at runtime
+          parsed = Message.parse_message!(message.string)
+          localized =
+            Cldr.Message.format_list(
+              parsed,
+              variables,
+              # Don't specify a locale. Use the default one.
+              []
+            )
+
+          # The variable `text` is an iolist and not a string
+          # Our pseudolocalization functions expect a string for further processing.
+          text = to_string(localized)
+          # Use fully qualified module name in quoted expression
+          Mezzofanti.Pseudolocalization.HtmlPseudolocalization.pseudolocalize(text)
+        end
+
+        # HTML pseudolocalization
+        def unquote(fun_name)(_, "pseudo", variables, message) do
+          # Parse the string at runtime
+          parsed = Message.parse_message!(message.string)
+          localized =
+            Cldr.Message.format_list(
+              parsed,
+              variables,
+              # Don't specify a locale. Use the default one.
+              []
+            )
+
+          # The variable `text` is an iolist and not a string
+          # Our pseudolocalization functions expect a string for further processing.
+          text = to_string(localized)
+          # Use fully qualified module name in quoted expression
+          Mezzofanti.Pseudolocalization.TextPseudolocalization.pseudolocalize(text)
+        end
+
+        # HTML pseudolocalization
+        def unquote(fun_name)(_, _, variables, message) do
+          # Parse the string at runtime
+          parsed = Message.parse_message!(message.string)
+          localized =
+            Cldr.Message.format_list(
+              parsed,
+              variables,
+              # Don't specify a locale. Use the default one.
+              []
+            )
+
+          localized
+        end
+      end
+
     # Make sure the gettext files are declared as external resources,
     # so that changing them triggers a recompilation of the Mezzofanti backend.
     resource_registration =
@@ -124,7 +180,8 @@ defmodule Mezzofanti.Backends.GettextBackend do
              List.flatten(translated_function_clauses) ++
              text_pseudolocalization_function_clauses ++
              html_pseudolocalization_function_clauses ++
-             untranslated_function_clauses
+             untranslated_function_clauses ++
+             [message_not_extracted_function_clauses]
          ))
       end
 
