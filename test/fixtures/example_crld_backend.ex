@@ -7,9 +7,6 @@ defmodule ExampleClrdBackend do
       Cldr.DateTime,
       Cldr.Unit,
       Cldr.Calendar,
-      Cldr.Message,
-      Cldr.DateTime,
-      Cldr.Unit,
-      Cldr.Calendar
+      Cldr.Message
     ]
 end
