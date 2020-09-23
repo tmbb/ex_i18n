@@ -193,11 +193,11 @@ defmodule Mezzofanti.Backends.GettextBackend do
     # extensions, then invoke pseudolocalisation
     cldr_language_tag_pseudo_clauses =
       quote do
-        def unquote(fun_name)(message_hash, %Cldr.LanguageTag{extensions: %{"m" => ["pseudo"]}} = locale, variables, translation) do
+        def unquote(fun_name)(message_hash, %Cldr.LanguageTag{extensions: %{"m" => ["pseudo"]}}, variables, translation) do
           unquote(fun_name)(message_hash, "pseudo", variables, translation)
         end
 
-        def unquote(fun_name)(message_hash, %Cldr.LanguageTag{extensions: %{"m" => ["pseudoht"]}} = locale, variables, translation) do
+        def unquote(fun_name)(message_hash, %Cldr.LanguageTag{extensions: %{"m" => ["pseudoht"]}}, variables, translation) do
           unquote(fun_name)(message_hash, "pseudoht", variables, translation)
         end
       end
