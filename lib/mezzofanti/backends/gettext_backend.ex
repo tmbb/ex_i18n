@@ -189,6 +189,17 @@ defmodule Mezzofanti.Backends.GettextBackend do
         end
       end
 
+    # If the locale is `Cldr.LanguageTag.t` then extract the cldr locale name
+    # which is a binary and therefore is better aligned with translation requirements
+    # and file serialization in `*.pot` files
+    cldr_language_tag_clause =
+      quote do
+        def unquote(fun_name)(message_hash, %Cldr.LanguageTag{} = locale, variables, translation) do
+          %{cldr_locale_name: cldr_locale_name} = locale
+          unquote(fun_name)(message_hash, cldr_locale_name, variables, translation)
+        end
+      end
+
     # Make sure the gettext files are declared as external resources,
     # so that changing them triggers a recompilation of the Mezzofanti backend.
     resource_registration =
@@ -200,13 +211,14 @@ defmodule Mezzofanti.Backends.GettextBackend do
 
     quote do
       (unquote_splicing(
-         resource_registration ++
-           List.flatten(translated_function_clauses) ++
-           text_pseudolocalization_function_clauses ++
-           html_pseudolocalization_function_clauses ++
-           untranslated_function_clauses ++
-           [message_not_extracted_function_clauses]
-       ))
+          resource_registration ++
+            List.flatten(translated_function_clauses) ++
+            [cldr_language_tag_clause] ++
+            text_pseudolocalization_function_clauses ++
+            html_pseudolocalization_function_clauses ++
+            untranslated_function_clauses ++
+            [message_not_extracted_function_clauses]
+        ))
     end
   end
 
