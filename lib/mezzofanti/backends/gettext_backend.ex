@@ -189,6 +189,19 @@ defmodule Mezzofanti.Backends.GettextBackend do
         end
       end
 
+    # If the locale is `Cldr.LanguageTag.t` and there is an `m`
+    # extensions, then invoke pseudolocalisation
+    cldr_language_tag_pseudo_clauses =
+      quote do
+        def unquote(fun_name)(message_hash, %Cldr.LanguageTag{extensions: %{"m" => ["pseudo"]}} = locale, variables, translation) do
+          unquote(fun_name)(message_hash, "pseudo", variables, translation)
+        end
+
+        def unquote(fun_name)(message_hash, %Cldr.LanguageTag{extensions: %{"m" => ["pseudoht"]}} = locale, variables, translation) do
+          unquote(fun_name)(message_hash, "pseudoht", variables, translation)
+        end
+      end
+
     # If the locale is `Cldr.LanguageTag.t` then extract the cldr locale name
     # which is a binary and therefore is better aligned with translation requirements
     # and file serialization in `*.pot` files
@@ -213,6 +226,7 @@ defmodule Mezzofanti.Backends.GettextBackend do
       (unquote_splicing(
           resource_registration ++
             List.flatten(translated_function_clauses) ++
+            [cldr_language_tag_pseudo_clauses] ++
             [cldr_language_tag_clause] ++
             text_pseudolocalization_function_clauses ++
             html_pseudolocalization_function_clauses ++
