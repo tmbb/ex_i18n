@@ -1,16 +1,30 @@
 defmodule Mezzofanti.Backends.GettextBackend do
   alias Mezzofanti.Gettext.GettextParser
   alias Mezzofanti.Message
+  require Logger
 
   defmacro __using__(opts \\ []) do
-    directory = Keyword.get(opts, :directory, "priv/mezzofanti")
+    otp_app = Keyword.fetch!(opts, :otp_app)
+    priv = Keyword.get(opts, :priv, "priv/mezzofanti")
+
+    directory =
+      otp_app
+      |> Application.app_dir()
+      |> Path.join(priv)
+
+    # Ensure the backend is recompiled when the translation files change
     external_resources = Path.wildcard(Path.join(directory, "**/**.{po,pot}"))
     translations = translations_from_files(directory)
 
     generate_clauses(:translate_from_hash, translations, external_resources)
   end
 
-  def generate_clauses(fun_name, _messages = {original_messages, locales}, external_resources) do
+  @doc false
+  def log_message_not_extracted(message) do
+    Logger.warn("mezzofanti - message not extracted (#{message.file}:#{message.line}): #{inspect(message.string)}")
+  end
+
+  defp generate_clauses(fun_name, _messages = {original_messages, locales}, external_resources) do
     # These are the defaul function clauses.
     # The function will look up a valod translation and return the translated and localized message
     translated_function_clauses =
@@ -25,7 +39,12 @@ defmodule Mezzofanti.Backends.GettextBackend do
           parsed_translation = Message.parse_message!(message.translated)
 
           quote do
-            def unquote(fun_name)(unquote(message.hash), unquote(locale_name), variables, _translation) do
+            def unquote(fun_name)(
+                  unquote(message.hash),
+                  unquote(locale_name),
+                  variables,
+                  _translation
+                ) do
               Cldr.Message.format_list(
                 unquote(Macro.escape(parsed_translation)),
                 variables,
@@ -113,7 +132,9 @@ defmodule Mezzofanti.Backends.GettextBackend do
         # Text pseudolocalization
         def unquote(fun_name)(_, "pseudo_html", variables, message) do
           # Parse the string at runtime
+          Mezzofanti.Backends.GettextBackend.log_message_not_extracted(message)
           parsed = Message.parse_message!(message.string)
+
           localized =
             Cldr.Message.format_list(
               parsed,
@@ -132,7 +153,9 @@ defmodule Mezzofanti.Backends.GettextBackend do
         # HTML pseudolocalization
         def unquote(fun_name)(_, "pseudo", variables, message) do
           # Parse the string at runtime
+          Mezzofanti.Backends.GettextBackend.log_message_not_extracted(message)
           parsed = Message.parse_message!(message.string)
+
           localized =
             Cldr.Message.format_list(
               parsed,
@@ -151,7 +174,9 @@ defmodule Mezzofanti.Backends.GettextBackend do
         # HTML pseudolocalization
         def unquote(fun_name)(_, _, variables, message) do
           # Parse the string at runtime
+          Mezzofanti.Backends.GettextBackend.log_message_not_extracted(message)
           parsed = Message.parse_message!(message.string)
+
           localized =
             Cldr.Message.format_list(
               parsed,
@@ -173,21 +198,16 @@ defmodule Mezzofanti.Backends.GettextBackend do
         end
       end
 
-    result =
-      quote do
-        (unquote_splicing(
-           resource_registration ++
-             List.flatten(translated_function_clauses) ++
-             text_pseudolocalization_function_clauses ++
-             html_pseudolocalization_function_clauses ++
-             untranslated_function_clauses ++
-             [message_not_extracted_function_clauses]
-         ))
-      end
-
-    # File.write!("example.exs", result |> Macro.to_string() |> Code.format_string!())
-
-    result
+    quote do
+      (unquote_splicing(
+         resource_registration ++
+           List.flatten(translated_function_clauses) ++
+           text_pseudolocalization_function_clauses ++
+           html_pseudolocalization_function_clauses ++
+           untranslated_function_clauses ++
+           [message_not_extracted_function_clauses]
+       ))
+    end
   end
 
   def filter_pot_files(paths) do

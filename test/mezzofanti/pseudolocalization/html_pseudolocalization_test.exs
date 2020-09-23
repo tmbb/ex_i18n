@@ -28,29 +28,28 @@ defmodule Mezzofanti.Pseudolocalization.HtmlPseudolocalizationTest do
   end
 
   property "tags are preserved" do
-    check all tag_name <- StreamData.string(@html_tag_chars),
-              open <- StreamData.member_of(["<", "</"]),
-              close <- StreamData.member_of([">", "/>"]),
-              string = open <> tag_name <> close do
-              
+    check all(
+            tag_name <- StreamData.string(@html_tag_chars),
+            open <- StreamData.member_of(["<", "</"]),
+            close <- StreamData.member_of([">", "/>"]),
+            string = open <> tag_name <> close
+          ) do
       assert pseudolocalize(string) == string
     end
   end
 
   property "no latin characters remain in the string after pseudolocalization (alphanumeric string)" do
     # This property is not true if the string is allowed to have non-alphanumeric characters
-    check all string <- StreamData.string(:alphanumeric) do
+    check all(string <- StreamData.string(:alphanumeric)) do
       localized = pseudolocalize(string)
-      assert not(contains_latin_characters?(localized))
+      assert not contains_latin_characters?(localized)
     end
   end
 
   property "for alphanumeric strings, text localization is equivalent to html localization" do
     # This property is not true if the string is allowed to have non-alphanumeric characters
-    check all string <- StreamData.string(:alphanumeric) do
+    check all(string <- StreamData.string(:alphanumeric)) do
       assert assert pseudolocalize(string) == TextPseudolocalization.pseudolocalize(string)
     end
   end
-  
-      
 end

@@ -12,16 +12,16 @@
 #: test/fixtures/example_module.ex:39
 msgctxt ""
 msgid "This message contains <strong>html tags</strong> &amp; nasty stuff..."
-msgstr ""
+msgstr "Esta mensagem contém <strong>tags de HTML</strong> &amp; e coisas chatas..."
 
 #. 
 #: test/fixtures/example_module.ex:18
 msgctxt "a message"
 msgid "Hello {guest}!"
-msgstr ""
+msgstr "Olá {guest}!"
 
 #. 
 #: test/fixtures/example_module.ex:10
 msgctxt ""
 msgid "Hello world!"
-msgstr ""
+msgstr "Olá a todos!"

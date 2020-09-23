@@ -21,21 +21,27 @@ defmodule Mezzofanti.Fixtures.ExampleModule do
   def h(user, nr_photos) do
     # A more complex translation with two variables and plural forms.
     # It also defines a different domain.
-    translate("""
-    {nr_photos, plural,
-      =0 {{user} didn't take any photos.}
-      =1 {{user} took one photo.}
-      other {{user} took # photos.}}\
-    """,
+    translate(
+      """
+      {nr_photos, plural,
+        =0 {{user} didn't take any photos.}
+        =1 {{user} took one photo.}
+        other {{user} took # photos.}}\
+      """,
       domain: "photos",
       variables: [
         user: user,
         nr_photos: nr_photos
-      ])
+      ]
+    )
   end
 
   def i() do
     # An example message to show pseudolocalization for HTML
     translate("This message contains <strong>html tags</strong> &amp; nasty stuff...")
+  end
+
+  def j() do
+    translate("message not extracted")
   end
 end

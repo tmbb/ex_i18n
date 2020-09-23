@@ -5,17 +5,19 @@ defmodule Mix.Tasks.Mezzofanti.Merge do
 
   @recursive true
 
-  @shortdoc "Extracts messages from source code"
+  @shortdoc "Merges new messages into the locale directories"
 
   @moduledoc """
-  Extracts messages from source code.
+  Merges new messages into the locale directories.
   """
 
   # Currently no configuration options are supported
-  def run(_args) do
+  def run(args) do
+    {named, _} = OptionParser.parse!(args, strict: [priv: :string])
+    priv = Keyword.get(named, :priv, "priv/mezzofanti")
     # Extract messages
-    Extract.run([])
+    Extract.run(args)
     # Merge 
-    Merger.merge("priv/mezzofanti")
+    Merger.merge(priv)
   end
 end

@@ -3,8 +3,6 @@ defmodule Mezzofanti.Backends.GettextBackend.Extractor do
 
   alias Mezzofanti.Gettext.GettextFormatter
 
-  @messages_priv_dir "priv/mezzofanti"
-
   @pot_header """
   This file is a PO Template file.
 
@@ -71,6 +69,9 @@ defmodule Mezzofanti.Backends.GettextBackend.Extractor do
     )
   end
 
+  @doc """
+  Delete all .POT files from a directory.
+  """
   def clean_pot_files(directory_path) do
     for file <- Path.wildcard(Path.join(directory_path, "*.pot")) do
       File.rm!(file)
@@ -88,7 +89,6 @@ defmodule Mezzofanti.Backends.GettextBackend.Extractor do
     )
   end
 
-  # Encapsulate the logic of
   defp extract_and_persist_with_header_and_extension(directory_path, header, ext) do
     messages = extract_all_messages()
     domains = group_messages_by_domain(messages)
@@ -106,7 +106,7 @@ defmodule Mezzofanti.Backends.GettextBackend.Extractor do
     GettextFormatter.write_to_file!(path, @po_header, messages)
   end
 
-  def make_messages_priv_dir!() do
-    File.mkdir_p!(@messages_priv_dir)
+  def make_messages_priv_dir!(directory) do
+    File.mkdir_p!(directory)
   end
 end

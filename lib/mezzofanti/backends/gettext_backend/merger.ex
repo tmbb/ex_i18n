@@ -114,7 +114,7 @@ defmodule Mezzofanti.Backends.GettextBackend.Merger do
     s_new = MapSet.new(keys_new)
 
     {add_keys, keep_keys, _remove_keys} = add_keep_remove(s_old, s_new)
-    
+
     add = map_new |> Map.take(add_keys) |> Map.values()
     # We'll discard most message information from the old messages,
     # but we'll keep the translations.

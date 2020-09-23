@@ -50,16 +50,6 @@ defmodule Mezzofanti do
   end
 
   @doc """
-  TODO
-  """
-  def maybe_post_process(text, message, locale, localized) do
-    case Application.get_env(:mezzofanti, :backend) do
-      nil -> text
-      backend -> backend.post_process(text, message, locale, localized)
-    end
-  end
-
-  @doc """
   Translates a given string.
   """
   defmacro translate(string, options \\ []) do

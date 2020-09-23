@@ -4,15 +4,16 @@ defmodule Mix.Tasks.Mezzofanti.NewLocale do
 
   @recursive true
 
-  @shortdoc "Extracts messages from source code"
+  @shortdoc "Creates a new locale"
 
   @moduledoc """
   Extracts messages from source code.
   """
 
   def run(args) do
-    # TODO: add better error handling
-    [locale] = args
-    LocaleCreator.create_locale("priv/mezzofanti/", locale)
+    {named, unnamed} = OptionParser.parse!(args, strict: [priv: :string])
+    priv = Keyword.get(named, :priv, "priv/mezzofanti")
+    [locale] = unnamed
+    LocaleCreator.create_locale(priv, locale)
   end
 end
