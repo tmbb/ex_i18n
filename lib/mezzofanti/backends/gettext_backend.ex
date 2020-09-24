@@ -27,6 +27,18 @@ defmodule Mezzofanti.Backends.GettextBackend do
   defp generate_clauses(fun_name, _messages = {original_messages, locales}, external_resources) do
     # These are the defaul function clauses.
     # The function will look up a valod translation and return the translated and localized message
+
+    # If the locale is `Cldr.LanguageTag.t` then extract the cldr locale name
+    # which is a binary and therefore is better aligned with translation requirements
+    # and file serialization in `*.pot` files
+    _cldr_language_tag_clause =
+      quote do
+        def unquote(fun_name)(message_hash, %Cldr.LanguageTag{} = locale, variables, translation) do
+          %{cldr_locale_name: cldr_locale_name} = locale
+          unquote(fun_name)(message_hash, cldr_locale_name, variables, translation)
+        end
+      end
+
     translated_function_clauses =
       for {locale_name, translated_messages} <- locales do
         # Iterate over all translated messages which have been in fact translated.
@@ -41,7 +53,7 @@ defmodule Mezzofanti.Backends.GettextBackend do
           quote do
             def unquote(fun_name)(
                   unquote(message.hash),
-                  unquote(locale_name),
+                  %Cldr.LanguageTag{cldr_locale_name: unquote(locale_name)} = _locale ,
                   variables,
                   _translation
                 ) do
@@ -75,62 +87,10 @@ defmodule Mezzofanti.Backends.GettextBackend do
         end
       end
 
-    text_pseudolocalization_function_clauses =
-      for message <- original_messages do
-        # Store the parsed translation;
-        # Now even empty messages will be encoded.
-        parsed_translation = Message.parse_message!(message.string)
-
-        quote do
-          # This clause is triggered by the `"pseudo`" locale.
-          def unquote(fun_name)(unquote(message.hash), "pseudo", variables, _translation) do
-            translated =
-              Cldr.Message.format_list(
-                unquote(Macro.escape(parsed_translation)),
-                variables,
-                # Don't specify a locale. Use the default one.
-                []
-              )
-
-            # The variable `text` is an iolist and not a string
-            # Our pseudolocalization functions expect a string for further processing.
-            text = to_string(translated)
-            # Use fully qualified module name in quoted expression
-            Mezzofanti.Pseudolocalization.TextPseudolocalization.pseudolocalize(text)
-          end
-        end
-      end
-
-    html_pseudolocalization_function_clauses =
-      for message <- original_messages do
-        # Store the parsed translation;
-        # Now even empty messages will be encoded.
-        parsed_translation = Message.parse_message!(message.string)
-
-        quote do
-          # This clause is triggered by the `"pseudo_html`" locale.
-          def unquote(fun_name)(unquote(message.hash), "pseudo_html", variables, _translation) do
-            translated =
-              Cldr.Message.format_list(
-                unquote(Macro.escape(parsed_translation)),
-                variables,
-                # Don't specify a locale. Use the default one.
-                []
-              )
-
-            # The variable `text` is an iolist and not a string
-            # Our pseudolocalization functions expect a string for further processing.
-            text = to_string(translated)
-            # Use fully qualified module name in quoted expression
-            Mezzofanti.Pseudolocalization.HtmlPseudolocalization.pseudolocalize(text)
-          end
-        end
-      end
-
     message_not_extracted_function_clauses =
       quote do
         # Text pseudolocalization
-        def unquote(fun_name)(_, "pseudo_html", variables, message) do
+        def unquote(fun_name)(_, %Cldr.LanguageTag{extensions: %{"m" => ["pseudoht"]}}, variables, message) do
           # Parse the string at runtime
           Mezzofanti.Backends.GettextBackend.log_message_not_extracted(message)
           parsed = Message.parse_message!(message.string)
@@ -151,7 +111,7 @@ defmodule Mezzofanti.Backends.GettextBackend do
         end
 
         # HTML pseudolocalization
-        def unquote(fun_name)(_, "pseudo", variables, message) do
+        def unquote(fun_name)(_, %Cldr.LanguageTag{extensions: %{"m" => ["pseudo"]}}, variables, message) do
           # Parse the string at runtime
           Mezzofanti.Backends.GettextBackend.log_message_not_extracted(message)
           parsed = Message.parse_message!(message.string)
@@ -193,23 +153,26 @@ defmodule Mezzofanti.Backends.GettextBackend do
     # extensions, then invoke pseudolocalisation
     cldr_language_tag_pseudo_clauses =
       quote do
-        def unquote(fun_name)(message_hash, %Cldr.LanguageTag{extensions: %{"m" => ["pseudo"]}}, variables, translation) do
-          unquote(fun_name)(message_hash, "pseudo", variables, translation)
+        def unquote(fun_name)(message_hash, %Cldr.LanguageTag{extensions: %{"m" => ["pseudo"]}} = locale, variables, translation) do
+          new_locale = %{locale | extensions: %{}}
+          # Use the "normal" version of the string (which will probably be the english one)
+          translated = unquote(fun_name)(message_hash, new_locale, variables, translation)
+          # The variable `text` is an iolist and not a string
+          # Our pseudolocalization functions expect a string for further processing.
+          text = to_string(translated)
+          # Use fully qualified module name in quoted expression
+          Mezzofanti.Pseudolocalization.TextPseudolocalization.pseudolocalize(text)
         end
 
-        def unquote(fun_name)(message_hash, %Cldr.LanguageTag{extensions: %{"m" => ["pseudoht"]}}, variables, translation) do
-          unquote(fun_name)(message_hash, "pseudoht", variables, translation)
-        end
-      end
-
-    # If the locale is `Cldr.LanguageTag.t` then extract the cldr locale name
-    # which is a binary and therefore is better aligned with translation requirements
-    # and file serialization in `*.pot` files
-    cldr_language_tag_clause =
-      quote do
-        def unquote(fun_name)(message_hash, %Cldr.LanguageTag{} = locale, variables, translation) do
-          %{cldr_locale_name: cldr_locale_name} = locale
-          unquote(fun_name)(message_hash, cldr_locale_name, variables, translation)
+        def unquote(fun_name)(message_hash, %Cldr.LanguageTag{extensions: %{"m" => ["pseudoht"]}} = locale, variables, translation) do
+          new_locale = %{locale | extensions: %{}}
+          # Use the "normal" version of the string (which will probably be the english one)
+          translated = unquote(fun_name)(message_hash, new_locale, variables, translation)
+          # The variable `text` is an iolist and not a string
+          # Our pseudolocalization functions expect a string for further processing.
+          text = to_string(translated)
+          # Use fully qualified module name in quoted expression
+          Mezzofanti.Pseudolocalization.HtmlPseudolocalization.pseudolocalize(text)
         end
       end
 
@@ -225,11 +188,11 @@ defmodule Mezzofanti.Backends.GettextBackend do
     quote do
       (unquote_splicing(
           resource_registration ++
-            List.flatten(translated_function_clauses) ++
+            # Try to match the pseudolocales first
             [cldr_language_tag_pseudo_clauses] ++
-            [cldr_language_tag_clause] ++
-            text_pseudolocalization_function_clauses ++
-            html_pseudolocalization_function_clauses ++
+            # Try to match the "normal locales"
+            List.flatten(translated_function_clauses) ++
+            # If the locale doesn't match, treat it as an untranslated
             untranslated_function_clauses ++
             [message_not_extracted_function_clauses]
         ))
