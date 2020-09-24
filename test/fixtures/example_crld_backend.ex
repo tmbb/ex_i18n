@@ -1,4 +1,4 @@
-defmodule ExampleClrdBackend do
+defmodule ExampleCldrBackend do
   use Cldr,
     default_locale: "en",
     locales: ["en", "pt-PT"],

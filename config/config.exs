@@ -7,5 +7,5 @@ config :mezzofanti,
 
 config :ex_cldr,
   default_locale: "en",
-  default_backend: ExampleClrdBackend,
+  default_backend: ExampleCldrBackend,
   json_library: Jason
