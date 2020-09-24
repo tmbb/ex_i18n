@@ -4,7 +4,7 @@ defmodule Mezzofanti.Translator do
 
   @doc false
   def __translate__(hash, variables, translation) do
-    locale = Mezzofanti.get_locale() || Cldr.get_locale()
+    locale = Cldr.get_locale()
 
     case Config.backend() do
       nil ->

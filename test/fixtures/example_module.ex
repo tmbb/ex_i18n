@@ -1,6 +1,6 @@
 defmodule Mezzofanti.Fixtures.ExampleModule do
   use Mezzofanti
-  # Not that I don't need to require or impor a Mezzofanti backend here.
+  # Note that I don't need to require or impor a Mezzofanti backend here.
   # I just use the Mezzofanti library, and once a backend is configured
   # it will automatically become aware of these messages
   # (even if the messages exist in a different application)

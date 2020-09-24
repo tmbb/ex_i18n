@@ -28,24 +28,33 @@ defmodule Mezzofanti.Backends.GettextBackendTest do
     assert message == "kip tirou 4 fotografias."
   end
 
-  test "string not extracted" do
-    message_en = ExampleModule.j() |> to_string()
-    message_pt = Mezzofanti.with_locale("pt-PT", fn -> ExampleModule.j() end) |> to_string()
+  test "message not extracted - logs a warning in any locale" do
+    assert capture_log(fn ->
+      message = ExampleModule.j() |> to_string()
+      # also text the message content, since we're at it
+      assert message == "message not extracted"
+    end) =~ "mezzofanti - message not extracted"
 
-    assert message_en == "message not extracted"
-    assert message_pt == "message not extracted"
-  end
+    assert capture_log(fn ->
+      Mezzofanti.with_locale("pt-PT",
+        fn ->
+          message = ExampleModule.j() |> to_string()
+          assert message == "message not extracted"
+        end)
+      end) =~ "mezzofanti - message not extracted"
 
-  test "message not extracted logs a warning in any locale" do
-    assert capture_log(fn -> ExampleModule.j() end) =~ "mezzofanti - message not extracted"
-    
-    assert capture_log(fn -> Mezzofanti.with_locale("pt-PT", fn -> ExampleModule.j() end) end) =~
-      "mezzofanti - message not extracted"
-    
-    assert capture_log(fn -> Mezzofanti.with_locale("pseudo", fn -> ExampleModule.j() end) end) =~
-      "mezzofanti - message not extracted"
-    
-    assert capture_log(fn -> Mezzofanti.with_locale("pseudo_html", fn -> ExampleModule.j() end) end) =~
-      "mezzofanti - message not extracted"
+    assert capture_log(fn -> Mezzofanti.with_locale("pseudo",
+        fn ->
+          message = ExampleModule.j() |> to_string()
+          assert message == "message not extracted"
+        end)
+      end) =~ "mezzofanti - message not extracted"
+
+    assert capture_log(fn -> Mezzofanti.with_locale("pseudo_html",
+        fn ->
+          message = ExampleModule.j() |> to_string()
+          assert message == "message not extracted"
+        end)
+      end) =~ "mezzofanti - message not extracted"
   end
 end
