@@ -40,62 +40,68 @@ active at the same time.
 To use `Mezzofanti`, you must defines a `Cldr` backend and a `Mezzofanti` backend.
 Refer to [ex_cldr's documentation]() for how to configure a `Cldr` locale.
 
-    # Cldr backend to handle parsing and formatting ICU messages
-    defmodule ExampleClrdBackend do
-      use Cldr,
-        default_locale: "en",
-        locales: ["en", "pt-PT"],
-        providers: [
-          Cldr.Number,
-          Cldr.DateTime,
-          Cldr.Unit,
-          Cldr.Calendar,
-          Cldr.Message
-        ]
-    end
+```elixir
+# Cldr backend to handle parsing and formatting ICU messages
+defmodule ExampleClrdBackend do
+  use Cldr,
+    default_locale: "en",
+    locales: ["en", "pt-PT"],
+    providers: [
+      Cldr.Number,
+      Cldr.DateTime,
+      Cldr.Unit,
+      Cldr.Calendar,
+      Cldr.Message
+    ]
+end
 
-    # Mezzofanti backend that extracts translations
-    # from `.po` and `.pot` files (used by gettext)
-    defmodule ExampleMezzofantiBackend do
-      use Mezzofanti.Backends.GettextBackend,
-        otp_app: :mezzofanti,
-        priv: "priv/mezzofanti"
-    end
+# Mezzofanti backend that extracts translations
+# from `.po` and `.pot` files (used by gettext)
+defmodule ExampleMezzofantiBackend do
+  use Mezzofanti.Backends.GettextBackend,
+    otp_app: :mezzofanti,
+    priv: "priv/mezzofanti"
+end
+```
 
 Both backends should be configured in your app's `config.exs`:
 
-    # config/config.exs
-    config :mezzofanti,
-      backend: ExampleMezzofantiBackend
+```elixir
+# config/config.exs
+config :mezzofanti,
+  backend: ExampleMezzofantiBackend
 
-    config :ex_cldr,
-      default_locale: "en",
-      default_backend: ExampleClrdBackend,
-      json_library: Jason
+config :ex_cldr,
+  default_locale: "en",
+  default_backend: ExampleClrdBackend,
+  json_library: Jason
+```
 
 To translate strings in a module, you have to `use Mezzofanti` inside the module
 (it's *not* enough to `import Mezzofanti`, because the `use` macro adds some
 pre-compile hooks so that Mezzofanti is able to find the translated strings).
 This will import a `translate/2` macro into your module:
 
-    defmodule ExampleModule do
-      use Mezzofanti
-      # Note that you don't need to require or import a Mezzofanti backend here.
-      # Just use the Mezzofanti library, and once a backend is configured
-      # it will automatically become aware of these messages
-      # (even if the messages exist in a different application)
+```elixir
+defmodule ExampleModule do
+  use Mezzofanti
+  # Note that you don't need to require or import a Mezzofanti backend here.
+  # Just use the Mezzofanti library, and once a backend is configured
+  # it will automatically become aware of these messages
+  # (even if the messages exist in a different application)
 
-      def f() do
-        # A simple static translation
-        translate("Hello world!")
-      end
+  def f() do
+    # A simple static translation
+    translate("Hello world!")
+  end
 
-      def g(guest) do
-        # A translation with a variable.
-        # This translation also contains a context (to disambiguate messages with the same text)
-        translate("Hello {guest}!", context: "a message", variables: [guest: guest])
-      end
-    end
+  def g(guest) do
+    # A translation with a variable.
+    # This translation also contains a context (to disambiguate messages with the same text)
+    translate("Hello {guest}!", context: "a message", variables: [guest: guest])
+  end
+end
+```
 
 The messages use the [ICU message format](https://unicode-org.github.io/icu/).
 This format is much more powerful and robust than Gettext.
@@ -148,7 +154,7 @@ directory of an application. This behaviour can be changed by specifying a
     use Gettext, otp_app: :my_app, priv: "priv/translations"
 
 The translations directory specified by the `:priv` option should be a directory
-inside `priv/`, otherwise some functions (like `mix extract.mezzofanti`) won't work
+inside `priv/`, otherwise some functions (like `mix mezzofanti.extract`) won't work
 as expected.
 
 ## Locale
