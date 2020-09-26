@@ -25,7 +25,9 @@ defmodule Mezzofanti.Message do
   """
   def hash(domain, context, string) do
     message_unique_identifier = {domain, context, string}
-    :crypto.hash(:sha, :erlang.term_to_binary(message_unique_identifier))
+    h = :crypto.hash(:sha, :erlang.term_to_binary(message_unique_identifier))
+    # IO.inspect(Base.encode16(h), label: inspect(message_unique_identifier))
+    h
   end
 
   @doc """
@@ -41,7 +43,7 @@ defmodule Mezzofanti.Message do
   @doc """
   Create a new message.
 
-  If the fields `:parsed` and `:hash` are not given, they will be evaluated
+  If the fiels `:hash` is not given, they will be evaluated
   from the available fields (these fields are unambiguously determined by the rest of them)
   """
   def new(options) do

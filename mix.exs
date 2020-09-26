@@ -22,13 +22,14 @@ defmodule Mezzofanti.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:nimble_parsec, "~> 0.5"},
+      {:nimble_parsec, "~> 1.0"},
       {:jason, "~> 1.1"},
       {:decimal, "~> 2.0", override: true},
       {:ex_cldr, github: "elixir-cldr/cldr", branch: "cldr38", override: true},
-      {:ex_cldr_messages, "~> 0.5.0"},
+      {:ex_cldr_messages, "~> 0.6"},
       {:ex_cldr_numbers, "~> 2.7"},
-      {:ex_cldr_dates_times, "~> 2.2"},
+      # {:ex_cldr_dates_times, path: "../cldr_dates_times", override: true},
+      {:ex_cldr_dates_times, "~> 2.5"},
       {:ex_money, "~> 4.0 or ~> 5.0"},
       {:ex_cldr_units, "~> 2.0 or ~> 3.0"},
       {:ex_cldr_lists, "~> 2.3"},

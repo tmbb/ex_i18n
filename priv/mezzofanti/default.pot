@@ -1,27 +1,29 @@
 ## This file is a PO Template file.
-## 
+##
 ## `msgid`s here are often extracted from source code.
 ## Add new messages manually only if they're dynamic
 ## messages that can't be statically extracted.
-## 
+##
 ## Run `mix mezzofanti.extract` to bring this file up to
 ## date. Leave `msgstr`s empty as changing them here as no
 ## effect: edit them in PO (`.po`) files instead.
 
-
-#. 
-#: test/fixtures/example_module.ex:39
+#.
+#, icu-format
+#: test/fixtures/example_module.ex:41
 msgctxt ""
 msgid "This message contains <strong>html tags</strong> &amp; nasty stuff..."
 msgstr ""
 
-#. 
+#.
+#, icu-format
 #: test/fixtures/example_module.ex:18
 msgctxt "a message"
 msgid "Hello {guest}!"
 msgstr ""
 
-#. 
+#.
+#, icu-format
 #: test/fixtures/example_module.ex:10
 msgctxt ""
 msgid "Hello world!"

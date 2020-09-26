@@ -22,18 +22,20 @@ defmodule Mezzofanti.Gettext.GettextFormatter do
   #     msgid untranslated-string
   #     msgstr translated-string
   #
-  @default_flag "#, icu-format"
 
   defp format_message_as_iodata(%Message{} = message) do
     translated = if message.translated, do: message.translated, else: ""
 
-    flag =
-      case message.flag do
-        nil -> @default_flag
-        _ -> comment_with(message.flag, @default_flag <> ",")
+    # Add better support for flags - maybe parse them into a list?
+    flag = comment_with("icu-format", "#,")
+
+    source =
+      if message.file && message.line do
+        ["#: ", message.file, ":", to_string(message.line), "\n"]
+      else
+        []
       end
 
-    source = ["#: ", message.file, ":", to_string(message.line), "\n"]
     msgid = ["msgid ", encode_as_multiple_strings(message.string), "\n"]
     msgstr = ["msgstr ", encode_as_multiple_strings(translated), "\n"]
     # The comments are not used for message disambiguation.

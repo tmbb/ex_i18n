@@ -21,7 +21,11 @@ defmodule Mezzofanti.Backends.GettextBackend do
 
   @doc false
   def log_message_not_extracted(message) do
-    Logger.warn("mezzofanti - message not extracted (#{message.file}:#{message.line}): #{inspect(message.string)}")
+    Logger.warn(
+      "mezzofanti - message not extracted (#{message.file}:#{message.line}): #{
+        inspect(message.string)
+      }"
+    )
   end
 
   defp generate_clauses(fun_name, _messages = {original_messages, locales}, external_resources) do
@@ -53,7 +57,7 @@ defmodule Mezzofanti.Backends.GettextBackend do
           quote do
             def unquote(fun_name)(
                   unquote(message.hash),
-                  %Cldr.LanguageTag{cldr_locale_name: unquote(locale_name)} = _locale ,
+                  %Cldr.LanguageTag{cldr_locale_name: unquote(locale_name)} = _locale,
                   variables,
                   _translation
                 ) do
@@ -90,7 +94,12 @@ defmodule Mezzofanti.Backends.GettextBackend do
     message_not_extracted_function_clauses =
       quote do
         # Text pseudolocalization
-        def unquote(fun_name)(_, %Cldr.LanguageTag{extensions: %{"m" => ["pseudoht"]}}, variables, message) do
+        def unquote(fun_name)(
+              _,
+              %Cldr.LanguageTag{extensions: %{"m" => ["pseudoht"]}},
+              variables,
+              message
+            ) do
           # Parse the string at runtime
           Mezzofanti.Backends.GettextBackend.log_message_not_extracted(message)
           parsed = Message.parse_message!(message.string)
@@ -111,7 +120,12 @@ defmodule Mezzofanti.Backends.GettextBackend do
         end
 
         # HTML pseudolocalization
-        def unquote(fun_name)(_, %Cldr.LanguageTag{extensions: %{"m" => ["pseudo"]}}, variables, message) do
+        def unquote(fun_name)(
+              _,
+              %Cldr.LanguageTag{extensions: %{"m" => ["pseudo"]}},
+              variables,
+              message
+            ) do
           # Parse the string at runtime
           Mezzofanti.Backends.GettextBackend.log_message_not_extracted(message)
           parsed = Message.parse_message!(message.string)
@@ -153,7 +167,12 @@ defmodule Mezzofanti.Backends.GettextBackend do
     # extensions, then invoke pseudolocalisation
     cldr_language_tag_pseudo_clauses =
       quote do
-        def unquote(fun_name)(message_hash, %Cldr.LanguageTag{extensions: %{"m" => ["pseudo"]}} = locale, variables, translation) do
+        def unquote(fun_name)(
+              message_hash,
+              %Cldr.LanguageTag{extensions: %{"m" => ["pseudo"]}} = locale,
+              variables,
+              translation
+            ) do
           new_locale = %{locale | extensions: %{}}
           # Use the "normal" version of the string (which will probably be the english one)
           translated = unquote(fun_name)(message_hash, new_locale, variables, translation)
@@ -164,7 +183,12 @@ defmodule Mezzofanti.Backends.GettextBackend do
           Mezzofanti.Pseudolocalization.TextPseudolocalization.pseudolocalize(text)
         end
 
-        def unquote(fun_name)(message_hash, %Cldr.LanguageTag{extensions: %{"m" => ["pseudoht"]}} = locale, variables, translation) do
+        def unquote(fun_name)(
+              message_hash,
+              %Cldr.LanguageTag{extensions: %{"m" => ["pseudoht"]}} = locale,
+              variables,
+              translation
+            ) do
           new_locale = %{locale | extensions: %{}}
           # Use the "normal" version of the string (which will probably be the english one)
           translated = unquote(fun_name)(message_hash, new_locale, variables, translation)
@@ -187,15 +211,15 @@ defmodule Mezzofanti.Backends.GettextBackend do
 
     quote do
       (unquote_splicing(
-          resource_registration ++
-            # Try to match the pseudolocales first
-            [cldr_language_tag_pseudo_clauses] ++
-            # Try to match the "normal locales"
-            List.flatten(translated_function_clauses) ++
-            # If the locale doesn't match, treat it as an untranslated
-            untranslated_function_clauses ++
-            [message_not_extracted_function_clauses]
-        ))
+         # Try to match the pseudolocales first
+         # Try to match the "normal locales"
+         # If the locale doesn't match, treat it as an untranslated
+         resource_registration ++
+           [cldr_language_tag_pseudo_clauses] ++
+           List.flatten(translated_function_clauses) ++
+           untranslated_function_clauses ++
+           [message_not_extracted_function_clauses]
+       ))
     end
   end
 
