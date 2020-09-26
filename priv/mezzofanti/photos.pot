@@ -13,7 +13,7 @@
 #: test/fixtures/example_module.ex:24
 msgctxt ""
 msgid ""
-"{nr_photos, plural,"
+"{nr_photos, plural, "
 "  =0 {{user} didn't take any photos.}"
 "  =1 {{user} took one photo.}"
 "  other {{user} took # photos.}}"

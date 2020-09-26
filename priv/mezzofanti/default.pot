@@ -10,7 +10,13 @@
 
 
 #. 
-#: test/fixtures/example_module.ex:39
+#: test/fixtures/example_module.ex:45
+msgctxt ""
+msgid "message not extracted"
+msgstr ""
+
+#. 
+#: test/fixtures/example_module.ex:41
 msgctxt ""
 msgid "This message contains <strong>html tags</strong> &amp; nasty stuff..."
 msgstr ""
