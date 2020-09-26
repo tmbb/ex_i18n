@@ -22,13 +22,15 @@ defmodule Mezzofanti.Gettext.GettextFormatter do
   #     msgid untranslated-string
   #     msgstr translated-string
   #
+  @default_flag "#, icu-format"
+
   defp format_message_as_iodata(%Message{} = message) do
     translated = if message.translated, do: message.translated, else: ""
 
     flag =
       case message.flag do
-        nil -> ""
-        _ -> comment_with(message.flag, "#,")
+        nil -> @default_flag
+        _ -> comment_with(message.flag, @default_flag <> ",")
       end
 
     source = ["#: ", message.file, ":", to_string(message.line), "\n"]
