@@ -75,7 +75,7 @@ defmodule Mezzofanti do
 
     message =
       Message.new(
-        string: string,
+        string: Cldr.Message.canonical_message!(string, pretty: true),
         domain: domain,
         comment: comment,
         context: context,

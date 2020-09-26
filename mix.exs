@@ -26,7 +26,7 @@ defmodule Mezzofanti.MixProject do
       {:jason, "~> 1.1"},
       {:decimal, "~> 2.0", override: true},
       {:ex_cldr, github: "elixir-cldr/cldr", branch: "cldr38", override: true},
-      {:ex_cldr_messages, "~> 0.5.0"},
+      {:ex_cldr_messages, "~> 0.6"},
       {:ex_cldr_numbers, "~> 2.7"},
       {:ex_cldr_dates_times, "~> 2.2"},
       {:ex_money, "~> 4.0 or ~> 5.0"},
