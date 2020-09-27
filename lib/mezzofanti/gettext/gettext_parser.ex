@@ -33,18 +33,17 @@ defmodule Mezzofanti.Gettext.GettextParser do
     Message.new(deduped)
   end
 
-  newline =
-    choice([
-      ascii_char([?\n]),
-      eos()
-    ])
+  newline = ascii_char([?\n])
 
-  line = times(utf8_char(not: ?\n), min: 1) |> ignore(newline)
   maybe_empty_line = repeat(utf8_char(not: ?\n)) |> ignore(newline)
 
   whitespace_chars = [?\s, ?\t, ?\f]
 
   whitespace = repeat(ascii_char(whitespace_chars))
+
+  blank_line = whitespace |> concat(newline)
+
+  blank_lines = repeat(blank_line) |> optional(eos())
 
   gettext_string =
     ignore(ascii_char([?"]))
@@ -60,22 +59,21 @@ defmodule Mezzofanti.Gettext.GettextParser do
   text =
     gettext_string
     |> repeat(
-      newline
-      |> concat(whitespace)
-      |> ignore()
+      ignore(blank_lines)
+      |> ignore(whitespace)
       |> concat(gettext_string)
     )
     |> reduce(:make_multiline_string)
 
-  lines = fn marker, tag ->
-    marker
-    |> optional(ascii_char([?\s]))
-    |> ignore()
-    |> wrap(line)
-    |> times(min: 1)
-    |> reduce(:merge_lines)
-    |> unwrap_and_tag(tag)
-  end
+  # lines = fn marker, tag ->
+  #   marker
+  #   |> optional(ascii_char([?\s]))
+  #   |> ignore()
+  #   |> wrap(line)
+  #   |> times(min: 1)
+  #   |> reduce(:merge_lines)
+  #   |> unwrap_and_tag(tag)
+  # end
 
   maybe_empty_lines = fn marker, tag ->
     marker
@@ -93,12 +91,9 @@ defmodule Mezzofanti.Gettext.GettextParser do
     |> ignore()
     |> concat(text)
     |> ignore(whitespace)
-    |> ignore(newline)
+    |> ignore(choice([newline, eos()]))
     |> unwrap_and_tag(tag)
   end
-
-  blank_line = whitespace |> concat(ascii_char([?\n]))
-  blank_lines = repeat(blank_line)
 
   integer =
     ascii_string([?0..?9], min: 1)
@@ -139,7 +134,7 @@ defmodule Mezzofanti.Gettext.GettextParser do
     |> lookahead_not()
     |> string("#")
 
-  translator_comments = lines.(translator_comments_marker, :translator_comments)
+  translator_comments = maybe_empty_lines.(translator_comments_marker, :translator_comments)
 
   comment = choice([translator_comments | specific_comments])
 
@@ -154,18 +149,18 @@ defmodule Mezzofanti.Gettext.GettextParser do
     |> ignore(blank_lines)
     |> reduce(:make_message)
 
-  messages =
-    blank_lines
-    |> optional()
-    |> ignore()
-    |> repeat(message)
+  messages = repeat(message)
 
   file =
     header
+    |> concat(blank_lines)
     |> optional()
     |> ignore()
     |> concat(messages)
 
+  defparsec(:blank_line, blank_line)
+  defparsec(:blank_lines, blank_lines)
+  defparsec(:flag, flag)
   defparsecp(:message, message)
   defparsecp(:reference, reference)
   defparsecp(:messages, messages)
@@ -173,25 +168,25 @@ defmodule Mezzofanti.Gettext.GettextParser do
 
   @doc false
   def parse_reference!(text) do
-    {:ok, reference, _, _, _, _} = reference(text)
+    {:ok, reference, "", _, _, _} = reference(text)
     reference
   end
 
   @doc false
   def parse_single_message!(text) do
-    {:ok, [message], _, _, _, _} = message(text)
+    {:ok, [message], "", _, _, _} = message(text)
     message
   end
 
   @doc false
   def parse_messages!(text) do
-    {:ok, messages, _, _, _, _} = messages(text)
+    {:ok, messages, "", _, _, _} = messages(text)
     messages
   end
 
   @doc false
   def parse_file!(text) do
-    {:ok, messages, _, _, _, _} = file(text)
+    {:ok, messages, "", _, _, _} = file(text)
     messages
   end
 
@@ -202,7 +197,8 @@ defmodule Mezzofanti.Gettext.GettextParser do
       |> Path.rootname()
 
     contents = File.read!(path)
-    messages = parse_file!(contents)
+    normalized = String.replace(contents, "\r\n", "\n")
+    messages = parse_file!(normalized)
 
     Enum.map(messages, fn m -> Message.set_domain(m, domain) end)
   end

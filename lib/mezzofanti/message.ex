@@ -25,9 +25,7 @@ defmodule Mezzofanti.Message do
   """
   def hash(domain, context, string) do
     message_unique_identifier = {domain, context, string}
-    h = :crypto.hash(:sha, :erlang.term_to_binary(message_unique_identifier))
-    # IO.inspect(Base.encode16(h), label: inspect(message_unique_identifier))
-    h
+    :crypto.hash(:sha, :erlang.term_to_binary(message_unique_identifier))
   end
 
   @doc """
@@ -49,6 +47,7 @@ defmodule Mezzofanti.Message do
   def new(options) do
     all_options =
       options
+      |> canonicalize_string()
       |> maybe_add_hash()
 
     struct(__MODULE__, all_options)
@@ -77,15 +76,9 @@ defmodule Mezzofanti.Message do
     end
   end
 
-  # defp maybe_add_parsed(opts) do
-  #   case Keyword.get(opts, :parsed) do
-  #     nil ->
-  #       string = Keyword.get(opts, :string)
-  #       parsed = parse_message!(string)
-  #       [{:parsed, parsed} | opts]
-
-  #     _ ->
-  #       opts
-  #   end
-  # end
+  defp canonicalize_string(opts) do
+    Keyword.update(opts, :string, "", fn string ->
+      Cldr.Message.canonical_message!(string, pretty: true)
+    end)
+  end
 end

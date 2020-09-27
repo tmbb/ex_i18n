@@ -75,7 +75,7 @@ defmodule Mezzofanti do
 
     message =
       Message.new(
-        string: Cldr.Message.canonical_message!(string, pretty: true),
+        string: string,
         domain: domain,
         comment: comment,
         context: context,
@@ -83,7 +83,6 @@ defmodule Mezzofanti do
         line: line,
         module: module
       )
-      |> IO.inspect()
 
     Module.put_attribute(module, :__mezzofanti_messages__, message)
 

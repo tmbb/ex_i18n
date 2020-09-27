@@ -14,6 +14,7 @@ defmodule Mezzofanti.Backends.GettextBackend do
 
     # Ensure the backend is recompiled when the translation files change
     external_resources = Path.wildcard(Path.join(directory, "**/**.{po,pot}"))
+    # translations = {[], %{}}
     translations = translations_from_files(directory)
 
     generate_clauses(:translate_from_hash, translations, external_resources)
@@ -31,17 +32,6 @@ defmodule Mezzofanti.Backends.GettextBackend do
   defp generate_clauses(fun_name, _messages = {original_messages, locales}, external_resources) do
     # These are the defaul function clauses.
     # The function will look up a valod translation and return the translated and localized message
-
-    # If the locale is `Cldr.LanguageTag.t` then extract the cldr locale name
-    # which is a binary and therefore is better aligned with translation requirements
-    # and file serialization in `*.pot` files
-    _cldr_language_tag_clause =
-      quote do
-        def unquote(fun_name)(message_hash, %Cldr.LanguageTag{} = locale, variables, translation) do
-          %{cldr_locale_name: cldr_locale_name} = locale
-          unquote(fun_name)(message_hash, cldr_locale_name, variables, translation)
-        end
-      end
 
     translated_function_clauses =
       for {locale_name, translated_messages} <- locales do
@@ -209,18 +199,24 @@ defmodule Mezzofanti.Backends.GettextBackend do
         end
       end
 
-    quote do
-      (unquote_splicing(
-         # Try to match the pseudolocales first
-         # Try to match the "normal locales"
-         # If the locale doesn't match, treat it as an untranslated
-         resource_registration ++
-           [cldr_language_tag_pseudo_clauses] ++
-           List.flatten(translated_function_clauses) ++
-           untranslated_function_clauses ++
-           [message_not_extracted_function_clauses]
-       ))
-    end
+    r =
+      quote do
+        (unquote_splicing(
+           # Try to match the pseudolocales first
+           # Try to match the "normal locales"
+           # If the locale doesn't match, treat it as an untranslated
+           resource_registration ++
+             [cldr_language_tag_pseudo_clauses] ++
+             List.flatten(translated_function_clauses) ++
+             untranslated_function_clauses ++
+             [message_not_extracted_function_clauses]
+         ))
+      end
+
+    s = r |> Macro.to_string() |> Code.format_string!()
+    File.write!("example.exs", s)
+
+    r
   end
 
   def filter_pot_files(paths) do
