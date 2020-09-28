@@ -153,12 +153,12 @@ defmodule Mezzofanti.Gettext.GettextParserTest do
     #: test/fixtures/example_module.ex:24
     msgctxt ""
     msgid ""
-    "{nr_photos, plural, "
+    "{nr_photos, plural,"
     "  =0 {{user} didn't take any photos.}"
     "  =1 {{user} took one photo.}"
     "  other {{user} took # photos.}}"
     msgstr ""
-    "{nr_photos, plural, "
+    "{nr_photos, plural,"
     "  =0 {{user} não tirou fotografias nenhumas.}"
     "  =1 {{user} tirou 1 fotografia.}"
     "  other {{user} tirou # fotografias.}}"
@@ -172,16 +172,15 @@ defmodule Mezzofanti.Gettext.GettextParserTest do
         file: "test/fixtures/example_module.ex",
         flag: "icu-format",
         hash:
-          <<15, 121, 10, 94, 114, 198, 239, 112, 167, 255, 210, 82, 53, 172, 82, 95, 79, 237, 153,
-            112>>,
+          <<117, 3, 121, 64, 117, 236, 16, 108, 239, 4, 237, 29, 54, 110, 157, 16, 60,
+            194, 147, 171>>,
         line: 24,
         module: nil,
         previous_hash: nil,
         string:
-          "{nr_photos, plural, \n  =0 {{user} didn't take any photos.}\n  =1 {{user} took one photo.}\n  other {{user} took # photos.}}",
+          "{nr_photos, plural,\n  =0 {{user} didn't take any photos.}\n  =1 {{user} took one photo.}\n  other {{user} took # photos.}}",
         translated:
-          "{nr_photos, plural, \n  =0 {{user} não tirou fotografias nenhumas.}\n  =1 {{user} tirou 1 fotografia.}\n  other {{user} tirou # fotografias.}}"
-      }
+          "{nr_photos, plural,\n  =0 {{user} não tirou fotografias nenhumas.}\n  =1 {{user} tirou 1 fotografia.}\n  other {{user} tirou # fotografias.}}" }
     ]
 
     assert GettextParser.parse_file!(file) == expected
