@@ -1,10 +1,10 @@
-defmodule Mezzofanti.Pseudolocalization.Common do
+defmodule I18n.Pseudolocalization.Common do
   @moduledoc """
   Common functions for modules that implement pseudolocalization of text
   in several markup formats.
   """
 
-  alias Mezzofanti.Pseudolocalization.Common
+  alias I18n.Pseudolocalization.Common
   import NimbleParsec
   # Strings in other languages are assumed to be ~35% longer than in English
   @language_expansion 0.35
@@ -37,8 +37,8 @@ defmodule Mezzofanti.Pseudolocalization.Common do
 
   ## Examples:
 
-      iex> alias Mezzofanti.Pseudolocalization.Common
-      Mezzofanti.Pseudolocalization.Common
+      iex> alias I18n.Pseudolocalization.Common
+      I18n.Pseudolocalization.Common
 
       iex> Common.pseudolocalize_word("text")
       "ťêẋť~"
@@ -80,8 +80,8 @@ defmodule Mezzofanti.Pseudolocalization.Common do
 
   ## Examples
 
-      iex> alias Mezzofanti.Pseudolocalization.Common
-      Mezzofanti.Pseudolocalization.Common
+      iex> alias I18n.Pseudolocalization.Common
+      I18n.Pseudolocalization.Common
 
       iex> Common.convert_grapheme("A")
       "Å"

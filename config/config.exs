@@ -2,8 +2,8 @@
 # and its dependencies with the aid of the Mix.Config module.
 use Mix.Config
 
-config :mezzofanti,
-  backend: ExampleMezzofantiBackend
+config :ex_i18n,
+  backend: ExampleI18nBackend
 
 config :ex_cldr,
   default_locale: "en",

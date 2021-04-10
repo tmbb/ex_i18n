@@ -1,4 +1,4 @@
-defmodule Mezzofanti.Message do
+defmodule I18n.Message do
   @moduledoc false
   @type t() :: %__MODULE__{}
 

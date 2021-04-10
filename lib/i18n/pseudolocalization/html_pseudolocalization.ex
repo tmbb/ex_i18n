@@ -1,9 +1,9 @@
-defmodule Mezzofanti.Pseudolocalization.HtmlPseudolocalization do
+defmodule I18n.Pseudolocalization.HtmlPseudolocalization do
   @moduledoc """
   A module to support pseudolocalization.
   """
   import NimbleParsec
-  alias Mezzofanti.Pseudolocalization.TextPseudolocalization
+  alias I18n.Pseudolocalization.TextPseudolocalization
 
   # An HTML tag is basically anything between `<` and `>`.
   # Because HTMl attributes may contain inline CSS and inline JS,
@@ -36,7 +36,7 @@ defmodule Mezzofanti.Pseudolocalization.HtmlPseudolocalization do
   # If the JSON file is changed, we need to check if the following code
   # is still correct.
   entity_names =
-    "lib/mezzofanti/pseudolocalization/data/html_entities.json"
+    "lib/I18n/pseudolocalization/data/html_entities.json"
     |> File.read!()
     # Trim empty newlines that will make the following steps harder
     |> String.trim()
@@ -159,8 +159,8 @@ defmodule Mezzofanti.Pseudolocalization.HtmlPseudolocalization do
 
   ## Examples
 
-      iex> alias Mezzofanti.Pseudolocalization.HtmlPseudolocalization
-      Mezzofanti.Pseudolocalization.HtmlPseudolocalization
+      iex> alias I18n.Pseudolocalization.HtmlPseudolocalization
+      I18n.Pseudolocalization.HtmlPseudolocalization
 
       iex> HtmlPseudolocalization.pseudolocalize("normal text")
       "ñøȓɱàĺ~~ ťêẋť~"

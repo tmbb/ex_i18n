@@ -1,8 +1,8 @@
-defmodule Mezzofanti.Pseudolocalization.TextPseudolocalization do
+defmodule I18n.Pseudolocalization.TextPseudolocalization do
   @moduledoc """
   A module to support pseudolocalization.
   """
-  alias Mezzofanti.Pseudolocalization.Common
+  alias I18n.Pseudolocalization.Common
 
   @doc """
   Apply pseudolocalization to a given string.
@@ -39,8 +39,8 @@ defmodule Mezzofanti.Pseudolocalization.TextPseudolocalization do
 
   ## Examples
 
-      iex> alias Mezzofanti.Pseudolocalization.TextPseudolocalization
-      Mezzofanti.Pseudolocalization.TextPseudolocalization
+      iex> alias I18n.Pseudolocalization.TextPseudolocalization
+      I18n.Pseudolocalization.TextPseudolocalization
 
       iex> TextPseudolocalization.pseudolocalize("One")
       "Òñê~"

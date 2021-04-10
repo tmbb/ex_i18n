@@ -1,6 +1,6 @@
-# Mezzofanti
+# I18n
 
-The `Mezzofanti` module provides a way of localizing your application
+The `I18n` module provides a way of localizing your application
 based on the [ICU message format](https://unicode-org.github.io/icu/).
 
 ## Differences and similarities to Gettext
@@ -15,11 +15,11 @@ You use those macros to "mark" strings for translation
 so that Gettext can gather all translatable strings and persist them
 in `.po` and `.pot` files, which your translators can translate.
 
-In Mezzofanti, to mark strings for translation you *don't* need
+In I18n, to mark strings for translation you *don't* need
 to define a backend.
-You just `use Mezzofanti` and then mark the strings for translation
-with the `Mezzofanti.translate/2` macro.
-Then, to *display* the translated strings, you do define a Mezzofanti backend.
+You just `use I18n` and then mark the strings for translation
+with the `I18n.t/2` macro.
+Then, to *display* the translated strings, you do define a I18n backend.
 That backend will be able to extract translatable strings from your
 application and all your dependencies, so that you can translate
 everything in a centralized place.
@@ -28,16 +28,16 @@ unless somehow the dependency provides you with an already created `.pot`
 file that you add to your application's, `.pot` files
 If you are translating user-visible strings
 *in a library meant to be imported by other projects*, you shouldn't
-define a Mezzofanti backend at all.
-The user's Mezzofanti backend will be able to extract the strings from your library.
+define a I18n backend at all.
+The user's I18n backend will be able to extract the strings from your library.
 
 Unlike Gettext, where it might make sense to have more than one backend active
-at the same time, it never makes sense to have more than one Mezzofanti backend
+at the same time, it never makes sense to have more than one I18n backend
 active at the same time.
 
-## Using Mezzofanti
+## Using I18n
 
-To use `Mezzofanti`, you must defines a `Cldr` backend and a `Mezzofanti` backend.
+To use `I18n`, you must defines a `Cldr` backend and a `I18n` backend.
 Refer to [ex_cldr's documentation]() for how to configure a `Cldr` locale.
 
 ```elixir
@@ -55,12 +55,12 @@ defmodule ExampleClrdBackend do
     ]
 end
 
-# Mezzofanti backend that extracts translations
+# I18n backend that extracts translations
 # from `.po` and `.pot` files (used by gettext)
-defmodule ExampleMezzofantiBackend do
-  use Mezzofanti.Backends.GettextBackend,
-    otp_app: :mezzofanti,
-    priv: "priv/mezzofanti"
+defmodule ExampleI18nBackend do
+  use I18n.Backends.GettextBackend,
+    otp_app: :my_app,
+    priv: "priv/i18n"
 end
 ```
 
@@ -68,8 +68,8 @@ Both backends should be configured in your app's `config.exs`:
 
 ```elixir
 # config/config.exs
-config :mezzofanti,
-  backend: ExampleMezzofantiBackend
+config :i18n,
+  backend: ExampleI18nBackend
 
 config :ex_cldr,
   default_locale: "en",
@@ -77,16 +77,16 @@ config :ex_cldr,
   json_library: Jason
 ```
 
-To translate strings in a module, you have to `use Mezzofanti` inside the module
-(it's *not* enough to `import Mezzofanti`, because the `use` macro adds some
-pre-compile hooks so that Mezzofanti is able to find the translated strings).
+To translate strings in a module, you have to `use I18n` inside the module
+(it's *not* enough to `import I18n`, because the `use` macro adds some
+pre-compile hooks so that I18n is able to find the translated strings).
 This will import a `translate/2` macro into your module:
 
 ```elixir
 defmodule ExampleModule do
-  use Mezzofanti
-  # Note that you don't need to require or import a Mezzofanti backend here.
-  # Just use the Mezzofanti library, and once a backend is configured
+  use I18n
+  # Note that you don't need to require or import a I18n backend here.
+  # Just use the I18n library, and once a backend is configured
   # it will automatically become aware of these messages
   # (even if the messages exist in a different application)
 
@@ -144,17 +144,17 @@ A concrete example of such a directory structure could look like this:
           ├─ default.po
           └─ errors.po
 
-By default, Mezzofanti expects translations to be stored under the `priv/mezzofanti`
+By default, I18n expects translations to be stored under the `priv/I18n`
 directory of an application. This behaviour can be changed by specifying a
-`:priv` option when using `Mezzofanti`:
+`:priv` option when using `I18n`:
 
     # Look for translations in my_app/priv/translations instead of
-    # my_app/priv/mezzofanti
+    # my_app/priv/I18n
 
     use Gettext, otp_app: :my_app, priv: "priv/translations"
 
 The translations directory specified by the `:priv` option should be a directory
-inside `priv/`, otherwise some functions (like `mix mezzofanti.extract`) won't work
+inside `priv/`, otherwise some functions (like `mix i18n.extract`) won't work
 as expected.
 
 ## Locale

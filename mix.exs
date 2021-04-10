@@ -1,13 +1,14 @@
-defmodule Mezzofanti.MixProject do
+defmodule I18n.MixProject do
   use Mix.Project
 
   def project do
     [
-      app: :mezzofanti,
+      app: :ex_i18n,
       version: "0.1.0",
       elixir: "~> 1.7",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
+      package: package(),
       elixirc_paths: elixirc_paths(Mix.env())
     ]
   end
@@ -23,17 +24,21 @@ defmodule Mezzofanti.MixProject do
   defp deps do
     [
       {:nimble_parsec, "~> 1.0"},
-      {:jason, "~> 1.1"},
-      {:decimal, "~> 2.0", override: true},
-      {:ex_cldr, github: "elixir-cldr/cldr", branch: "cldr38", override: true},
-      {:ex_cldr_messages, "~> 0.6"},
-      {:ex_cldr_numbers, "~> 2.7"},
-      # {:ex_cldr_dates_times, path: "../cldr_dates_times", override: true},
-      {:ex_cldr_dates_times, "~> 2.5"},
-      {:ex_money, "~> 4.0 or ~> 5.0"},
-      {:ex_cldr_units, "~> 2.0 or ~> 3.0"},
-      {:ex_cldr_lists, "~> 2.3"},
+      {:ex_cldr, "~> 2.0"},
+      {:ex_cldr_messages, "~> 0.10"},
       {:stream_data, "~> 0.5.0", only: [:dev, :test]}
+    ]
+  end
+
+  defp package() do
+    [
+      # This option is only needed when you don't want to use the OTP application name
+      name: "ex_i18n",
+      # These are the default files included in the package
+      files: ~w(lib priv .formatter.exs mix.exs README* readme* LICENSE*
+                license* CHANGELOG* changelog* src),
+      licenses: ["MIT"],
+      links: %{"GitHub" => "https://github.com/tmbb/ex_i18n"}
     ]
   end
 

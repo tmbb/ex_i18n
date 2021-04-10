@@ -6,16 +6,16 @@ I want to enable something like this, which gettext already allows:
 # * In :my_dependency
 # file config.exs:
 config :my_dependency,
-  gettext_backend: MyDependency.MezzofantiBackend
+  gettext_backend: MyDependency.I18nBackend
 
-# file lib/my_dependency/mezzofanti_backend.ex
-defmodule MyDependency.MezzofantiBackend do
-  use Mezzofanti.Backend
+# file lib/my_dependency/I18n_backend.ex
+defmodule MyDependency.I18nBackend do
+  use I18n.Backend
 end
 
 # file lib/my_dependency/some_module.ex
 defmodule MyDependency.SomeModule do
-  use MyDependency.MezzofantiBackend
+  use MyDependency.I18nBackend
 
   def x() do
     translate("my sentence", [])
@@ -25,15 +25,15 @@ end
 # * In :my_app
 # file config.exs
 config :my_dependency,
-  gettext_backend: MyApp.MezzofantiBackend
+  gettext_backend: MyApp.I18nBackend
 
-# file lib/my_app/mezzofanti_backend.ex
-defmodule MyApp.MezzofantiBackend do
-  use Mezzofanti.Backend
+# file lib/my_app/I18n_backend.ex
+defmodule MyApp.I18nBackend do
+  use I18n.Backend
 end
 ```
 
-The big difference is that when you run `mezzofanti.extract` inside `my_app`'s mix project, it will extract not only the translations in `my_app` (which `gettext` already does), but also the translations in `my_dependency` (which `gettext` can't do).
+The big difference is that when you run `i18n.extract` inside `my_app`'s mix project, it will extract not only the translations in `my_app` (which `gettext` already does), but also the translations in `my_dependency` (which `gettext` can't do).
 
 Basically, the "trick" is to add the translations into something more durable than a process that is only alive while compilation happens.
 I've decided to store the translations into a special function in the modules.
@@ -42,7 +42,7 @@ To get all the translations in all applications, I just have to iterate over all
 ```elixir
   defp extract_translations_from_module(module) do
     try do
-      module.__mezzofanti_translations__()
+      module.__i18n_translations__()
     rescue
       UndefinedFunctionError ->
         []
