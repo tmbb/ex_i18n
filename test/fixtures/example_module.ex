@@ -1,4 +1,6 @@
 defmodule I18n.Fixtures.ExampleModule do
+  IO.puts("I'm being compiled!")
+
   use I18n
   # Note that I don't need to require or import a I18n backend here.
   # I just use the I18n library, and once a backend is configured
@@ -15,7 +17,7 @@ defmodule I18n.Fixtures.ExampleModule do
     # This translation contains a context, possibly to disambiguate it
     # from a similar string which should be translated in a different way.
     # I18n will keep equal strings with different contexts separate.
-    I18n.t("Hello {guest}!", context: "a message", variables: [guest: guest])
+    I18n.t("Hello {guest}!", context!: "a message", guest: guest)
   end
 
   def h(user, nr_photos) do
@@ -28,11 +30,9 @@ defmodule I18n.Fixtures.ExampleModule do
         =1 {{user} took one photo.}
         other {{user} took # photos.}}\
       """,
-      domain: "photos",
-      variables: [
-        user: user,
-        nr_photos: nr_photos
-      ]
+      domain!: "photos",
+      user: user,
+      nr_photos: nr_photos
     )
   end
 

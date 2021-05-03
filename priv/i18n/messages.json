@@ -1,0 +1,84 @@
+{
+  "deleted_messages": [],
+  "locales": [
+    "pt-PT"
+  ],
+  "messages": [
+    {
+      "context": "",
+      "domain": "photos",
+      "locations": [
+        {
+          "file": "test/fixtures/example_module.ex",
+          "line": 26,
+          "module": "Elixir.I18n.Fixtures.ExampleModule"
+        }
+      ],
+      "text": "{nr_photos, plural,\n  =0 {{user} didn't take any photos.}\n  =1 {{user} took one photo.}\n  other {{user} took # photos.}}",
+      "translations": [
+        {
+          "locale": "pt-PT",
+          "comment": "",
+          "text": "{nr_photos, plural,\n  =0 {{user} não tirou fotografias nenhumas.}\n  =1 {{user} tirou 1 fotografia.}\n  other {{user} tirou # fotografias.}}"
+        }
+      ]
+    },
+    {
+      "context": "",
+      "domain": "i18n.fixtures.example_module",
+      "locations": [
+        {
+          "file": "test/fixtures/example_module.ex",
+          "line": 41,
+          "module": "Elixir.I18n.Fixtures.ExampleModule"
+        }
+      ],
+      "text": "This message contains <strong>html tags</strong> &amp; nasty stuff...",
+      "translations": [
+        {
+          "locale": "pt-PT",
+          "comment": "",
+          "text": "Esta mensagem contém <strong>tags html</strong> &amp; coisas chatas..."
+        }
+      ]
+    },
+    {
+      "context": "a message",
+      "domain": "i18n.fixtures.example_module",
+      "locations": [
+        {
+          "file": "test/fixtures/example_module.ex",
+          "line": 20,
+          "module": "Elixir.I18n.Fixtures.ExampleModule"
+        }
+      ],
+      "text": "Hello {guest}!",
+      "translations": [
+        {
+          "locale": "pt-PT",
+          "comment": "",
+          "text": "Olá {guest}!"
+        }
+      ]
+    },
+    {
+      "context": "",
+      "domain": "i18n.fixtures.example_module",
+      "locations": [
+        {
+          "file": "test/fixtures/example_module.ex",
+          "line": 12,
+          "module": "Elixir.I18n.Fixtures.ExampleModule"
+        }
+      ],
+      "text": "Hello world!",
+      "translations": [
+        {
+          "locale": "pt-PT",
+          "comment": "",
+          "text": "Olá a todos!"
+        }
+      ]
+    }
+  ]
+}

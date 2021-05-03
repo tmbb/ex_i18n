@@ -98,7 +98,7 @@ defmodule ExampleModule do
   def g(guest) do
     # A translation with a variable.
     # This translation also contains a context (to disambiguate messages with the same text)
-    translate("Hello {guest}!", context: "a message", variables: [guest: guest])
+    translate("Hello {guest}!", context: "a message", bindings: [guest: guest])
   end
 end
 ```

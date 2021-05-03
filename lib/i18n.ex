@@ -1,12 +1,25 @@
 defmodule I18n do
   @moduledoc File.read!("README.md")
 
-  alias I18n.Message
+  require ExUnit.Assertions, as: Assertions
+  alias I18n.Messages.{
+    InlineMessage,
+    MessageLocation
+  }
 
-  defmacro __using__(_opts) do
+  # We might support other message handlers in the future.
+  # TODO: should we do it? if so, which API should we support?
+  alias I18n.MessageHandlers.IcuMessageHandler
+
+  defmacro __using__(opts \\ []) do
+    domain = Keyword.get(opts, :domain)
+    Assertions.assert((domain == nil) or (is_binary(domain)))
+
     quote do
       require unquote(__MODULE__)
       @before_compile unquote(__MODULE__)
+
+      Module.put_attribute(__MODULE__, :__i18n_global_domain__, unquote(domain))
 
       Module.register_attribute(__MODULE__, :__i18n_messages__, accumulate: true)
     end
@@ -43,7 +56,7 @@ defmodule I18n do
 
   It accepts the following options:
 
-      * `:variables` - variables to interpolate inside the string.
+      * `:bindings` - variables to interpolate inside the string.
         Should be a keyword list of the form `[var1: value1, var2: value2]`
       * `:domain` - the domain of the translations. It must be a compile-time string.
         Domains will map to file names names inside the `priv/i18n` directory.
@@ -65,33 +78,59 @@ defmodule I18n do
     line = __CALLER__.line
     file = __CALLER__.file
     module = __CALLER__.module
-    domain = Keyword.get(options, :domain, "default")
-    context = Keyword.get(options, :context, "")
-    # TODO: Should we keep the `comment`?
-    comment = Keyword.get(options, :comment, "")
-    variables = Keyword.get(options, :variables, [])
+
+    global_domain = Module.get_attribute(module, :__i18n_global_domain__)
+    default_domain =
+      case global_domain do
+        nil -> module_to_domain(module)
+        other -> other
+      end
+
+    domain = Keyword.get(options, :domain!, default_domain)
+    context = Keyword.get(options, :context!, "")
+    locale = Keyword.get(options, :locale!, nil)
+    binding =
+      options
+      |> Keyword.delete(:domain!)
+      |> Keyword.delete(:context!)
+      |> Keyword.delete(:locale!)
 
     relative_path = Path.relative_to_cwd(file)
 
-    message =
-      Message.new(
-        string: string,
-        domain: domain,
-        comment: comment,
-        context: context,
+    location =
+      MessageLocation.new(
         file: relative_path,
         line: line,
         module: module
       )
 
+    message =
+      InlineMessage.new(
+        text: string,
+        domain: domain,
+        context: context,
+        location: location
+      )
+
+    {:ok, parsed} = IcuMessageHandler.parse(string)
+
     Module.put_attribute(module, :__i18n_messages__, message)
 
     quote do
-      I18n.Translator.__translate__(
+      I18n.Translator.translate(
         unquote(message.hash),
-        unquote(variables),
+        unquote(locale),
+        unquote(binding),
+        unquote(Macro.escape(parsed)),
         unquote(Macro.escape(message))
       )
     end
+  end
+
+  defp module_to_domain(module) do
+    module
+    |> Module.split()
+    |> Enum.map(&Macro.underscore/1)
+    |> Enum.join(".")
   end
 end

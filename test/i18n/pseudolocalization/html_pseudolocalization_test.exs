@@ -1,30 +1,41 @@
 defmodule I18n.Pseudolocalization.HtmlPseudolocalizationTest do
   use ExUnit.Case, async: true
-  import I18n.Pseudolocalization.HtmlPseudolocalization, only: [pseudolocalize: 1]
+  alias I18n.Pseudolocalization.{
+    HtmlPseudolocalization,
+    TextPseudolocalization
+  }
   import ExUnitProperties
-  alias I18n.Pseudolocalization.TextPseudolocalization
+
+  doctest I18n.Pseudolocalization.HtmlPseudolocalization
+
+  # Convert all iolists to text to get prettier test cases.
+  def pseudolocalize_html(string) do
+    string
+    |> HtmlPseudolocalization.pseudolocalize()
+    |> to_string()
+  end
 
   @html_tag_chars [?a..?z, ?A..?Z, ?0..?9, ?-, ?_, ?\s, ?:, ?.]
 
   def contains_latin_characters?(string) do
     string
     |> String.to_charlist()
-    |> Enum.any?(fn c -> c in ?a..?z or c in ?A..?Z end)
+    |> Enum.any?(fn c -> c in ?a..?z or c in ?A..?Z or c in ?0..?9 end)
   end
 
   test "empty string" do
-    assert pseudolocalize("") == ""
+    assert pseudolocalize_html("") == "[]"
   end
 
   test "examples" do
     # HTML tags
-    assert pseudolocalize("a <b>thing</b>") == "à <b>ťȟıñğ~</b>"
+    assert pseudolocalize_html("a <b>thing</b>") == "[à <b>ťȟıñğ~</b>]"
     # HTML entity
-    assert pseudolocalize("a &amp; b") == "à &amp; ƀ"
+    assert pseudolocalize_html("a &amp; b") == "[à &amp; ƀ]"
     # HTML without optional semicolon
-    assert pseudolocalize("a &amp b") == "à &amp ƀ"
+    assert pseudolocalize_html("a &amp b") == "[à &amp ƀ]"
     # HTML tags and entities
-    assert pseudolocalize("<i>a</i> &amp; b") == "<i>à</i> &amp; ƀ"
+    assert pseudolocalize_html("<i>a</i> &amp; b") == "[<i>à</i> &amp; ƀ]"
   end
 
   property "tags are preserved" do
@@ -34,14 +45,14 @@ defmodule I18n.Pseudolocalization.HtmlPseudolocalizationTest do
             close <- StreamData.member_of([">", "/>"]),
             string = open <> tag_name <> close
           ) do
-      assert pseudolocalize(string) == string
+      assert pseudolocalize_html(string) == "[" <> string <> "]"
     end
   end
 
   property "no latin characters remain in the string after pseudolocalization (alphanumeric string)" do
     # This property is not true if the string is allowed to have non-alphanumeric characters
     check all(string <- StreamData.string(:alphanumeric)) do
-      localized = pseudolocalize(string)
+      localized = pseudolocalize_html(string)
       assert not contains_latin_characters?(localized)
     end
   end
@@ -49,7 +60,7 @@ defmodule I18n.Pseudolocalization.HtmlPseudolocalizationTest do
   property "for alphanumeric strings, text localization is equivalent to html localization" do
     # This property is not true if the string is allowed to have non-alphanumeric characters
     check all(string <- StreamData.string(:alphanumeric)) do
-      assert assert pseudolocalize(string) == TextPseudolocalization.pseudolocalize(string)
+      assert pseudolocalize_html(string) == to_string(TextPseudolocalization.pseudolocalize(string))
     end
   end
 end

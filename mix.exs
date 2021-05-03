@@ -5,7 +5,7 @@ defmodule I18n.MixProject do
     [
       app: :ex_i18n,
       version: "0.1.0",
-      elixir: "~> 1.7",
+      elixir: "~> 1.9",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       package: package(),
@@ -16,17 +16,21 @@ defmodule I18n.MixProject do
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
-      extra_applications: [:logger]
+      mod: {I18n.Application, []},
+      extra_applications: [:logger, :mnesia]
     ]
   end
 
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:nimble_parsec, "~> 1.0"},
       {:ex_cldr, "~> 2.0"},
       {:ex_cldr_messages, "~> 0.10"},
-      {:stream_data, "~> 0.5.0", only: [:dev, :test]}
+
+      # Tests and benchmarks
+      {:stream_data, "~> 0.5.0", only: [:dev, :test]},
+      {:benchee, "~> 1.0", only: [:dev, :test]},
+      {:benchee_markdown, "~> 0.2", only: [:dev, :test]}
     ]
   end
 

@@ -3,6 +3,7 @@ defmodule I18n.Pseudolocalization.HtmlPseudolocalization do
   A module to support pseudolocalization.
   """
   import NimbleParsec
+  alias I18n.Pseudolocalization.Common
   alias I18n.Pseudolocalization.TextPseudolocalization
 
   # An HTML tag is basically anything between `<` and `>`.
@@ -26,6 +27,8 @@ defmodule I18n.Pseudolocalization.HtmlPseudolocalization do
   hex_encoding = times(ascii_char([?0..?9, ?a..?f, ?A..?F]), min: 1)
   decimal_encoding = times(ascii_char([?0..?9]), min: 1)
 
+  # TODO: use JSON for this, since we're already using JSON for other purposes?
+  #
   # To be as correct as possible, we will parse the list of allowed HTML entities
   # from the JSON file in the original spec.
   #
@@ -84,7 +87,7 @@ defmodule I18n.Pseudolocalization.HtmlPseudolocalization do
       html_entity_codepoint,
       # Use the parsec and not the combinator to reduce compilation time.
       # Apparently NimbleParsec tries really hard to optimize these choices
-      # unles we use the parsec.
+      # unless we use the parsec.
       parsec(:html_entity_named)
     ])
 
@@ -125,12 +128,12 @@ defmodule I18n.Pseudolocalization.HtmlPseudolocalization do
   defp pseudolocalize_fragment({:html_tag, iolist}), do: iolist
   defp pseudolocalize_fragment({:html_entity, iolist}), do: iolist
   defp pseudolocalize_fragment({:malformed, iolist}), do: iolist
-  defp pseudolocalize_fragment({:text, text}), do: TextPseudolocalization.pseudolocalize(text)
+  defp pseudolocalize_fragment({:text, text}), do: TextPseudolocalization.pseudolocalize_fragment(text)
 
   @doc """
   Apply pseudolocalization to a given HTML string (respecting tags).
 
-  Form [Wikipedia](https://en.wikipedia.org/wiki/Pseudolocalization):
+  From [Wikipedia](https://en.wikipedia.org/wiki/Pseudolocalization):
 
   > Pseudolocalization (or pseudo-localization) is a software testing method
   > used for testing internationalization aspects of software.
@@ -162,29 +165,26 @@ defmodule I18n.Pseudolocalization.HtmlPseudolocalization do
       iex> alias I18n.Pseudolocalization.HtmlPseudolocalization
       I18n.Pseudolocalization.HtmlPseudolocalization
 
-      iex> HtmlPseudolocalization.pseudolocalize("normal text")
-      "ñøȓɱàĺ~~ ťêẋť~"
+      iex> HtmlPseudolocalization.pseudolocalize("normal text") |> to_string()
+      "[ñøȓɱàĺ~~ ťêẋť~]"
 
-      iex> HtmlPseudolocalization.pseudolocalize("<a-tag>")
-      "<a-tag>"
+      iex> HtmlPseudolocalization.pseudolocalize("<a-tag>") |> to_string()
+      "[<a-tag>]"
 
-      iex> HtmlPseudolocalization.pseudolocalize("<another-tag class=\"classy\">")
-      "<another-tag class=\"classy\">"
+      iex> HtmlPseudolocalization.pseudolocalize("Abbot &amp; Costello") |> to_string()
+      "[Åƀƀøť~ &amp; Ċøšťêĺĺø~~]"
 
-      iex> HtmlPseudolocalization.pseudolocalize("Abbot &amp; Costello")
-      "Åƀƀøť~ &amp; Ċøšťêĺĺø~~"
+      iex> HtmlPseudolocalization.pseudolocalize("Abbot &amp Costello") |> to_string() # entity without semicolon
+      "[Åƀƀøť~ &amp Ċøšťêĺĺø~~]"
 
-      iex> HtmlPseudolocalization.pseudolocalize("Abbot &amp Costello") # entity without semicolon
-      "Åƀƀøť~ &amp Ċøšťêĺĺø~~"
-
-      iex> HtmlPseudolocalization.pseudolocalize("<strong>Abbot</strong> &amp Costello")
-      "<strong>Åƀƀøť~</strong> &amp Ċøšťêĺĺø~~"
+      iex> HtmlPseudolocalization.pseudolocalize("<strong>Abbot</strong> &amp Costello") |> to_string()
+      "[<strong>Åƀƀøť~</strong> &amp Ċøšťêĺĺø~~]"
 
   """
   def pseudolocalize(string) do
     string
     |> parse_html()
     |> Enum.map(&pseudolocalize_fragment/1)
-    |> to_string()
+    |> Common.surround_by_brackets()
   end
 end

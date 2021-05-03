@@ -2,6 +2,19 @@ defmodule I18n.Pseudolocalization.Common do
   @moduledoc """
   Common functions for modules that implement pseudolocalization of text
   in several markup formats.
+
+  From [Wikipedia](https://en.wikipedia.org/wiki/Pseudolocalization):
+
+  > Pseudolocalization (or pseudo-localization) is a software testing method
+  > used for testing internationalization aspects of software.
+  > Instead of translating the text of the software into a foreign language,
+  > as in the process of localization, the textual elements of an application
+  > are replaced with an altered version of the original language.
+  >
+  > These specific alterations make the original words appear readable,
+  > but include the most problematic characteristics of the world's languages:
+  > varying length of text or characters, language direction,
+  > fit into the interface and so on.
   """
 
   alias I18n.Pseudolocalization.Common
@@ -40,13 +53,13 @@ defmodule I18n.Pseudolocalization.Common do
       iex> alias I18n.Pseudolocalization.Common
       I18n.Pseudolocalization.Common
 
-      iex> Common.pseudolocalize_word("text")
+      iex> Common.pseudolocalize_word("text") |> to_string()
       "ťêẋť~"
 
-      iex> Common.pseudolocalize_word("text!")
+      iex> Common.pseudolocalize_word("text!") |> to_string()
       "ťêẋť~!"
 
-      iex> Common.pseudolocalize_word("(text!)")
+      iex> Common.pseudolocalize_word("(text!)") |> to_string()
       "(ťêẋť~!)"
   """
   def pseudolocalize_word(""), do: ""
@@ -68,11 +81,11 @@ defmodule I18n.Pseudolocalization.Common do
         Common.convert_grapheme(grapheme)
       end
 
-    to_string([left, new_graphemes, extra_characters, right])
+    [left, new_graphemes, extra_characters, right]
   end
 
   @doc """
-  Converts a single grapheme (not a unicode codepoints!) into a localized version.
+  Converts a single grapheme (not a unicode codepoint!) into a localized version.
 
   You probably don't want to use this directly unless you want to implement your
   custom pseudolocalization function that deals with things like HTML tags
@@ -83,13 +96,13 @@ defmodule I18n.Pseudolocalization.Common do
       iex> alias I18n.Pseudolocalization.Common
       I18n.Pseudolocalization.Common
 
-      iex> Common.convert_grapheme("A")
+      iex> Common.convert_grapheme("A") |> to_string()
       "Å"
 
-      iex> Common.pseudolocalize_word("D")
+      iex> Common.pseudolocalize_word("D") |> to_string()
       "Đ"
 
-      iex> Common.pseudolocalize_word("f")
+      iex> Common.pseudolocalize_word("f") |> to_string()
       "ƒ"
   """
   def convert_grapheme(g) do
@@ -148,8 +161,23 @@ defmodule I18n.Pseudolocalization.Common do
       "x" -> "ẋ"
       "y" -> "ÿ"
       "z" -> "ź"
+      # Digits
+      "0" -> "𝟘"
+      "1" -> "𝟙"
+      "2" -> "𝟚"
+      "3" -> "𝟛"
+      "4" -> "𝟜"
+      "5" -> "𝟝"
+      "6" -> "𝟞"
+      "7" -> "𝟟"
+      "8" -> "𝟠"
+      "9" -> "𝟡"
       # Other characters are returned as they are
       other -> other
     end
+  end
+
+  def surround_by_brackets(iolist) do
+    ["[", iolist, "]"]
   end
 end

@@ -25,11 +25,13 @@ defmodule I18n.Pseudolocalization.TextPseudolocalization do
       * Replace each latin character with a slightly modified version,
         which is still legible (for example, `m → ɱ`, `j → ǰ`)
 
+      * Replace arabic numeral (i.e. latin digits) as above.
+
       * Add extra tilde (`~`) characters to words to make them 35% longer.
         as a rule of thumb, one should asusme that foreign language strings
         are 35% longer in other languages
 
-      * Other characters (non-latin characters, numbers, punctuation characters, etc.)
+      * Other characters (non-latin characters, punctuation characters, etc.)
         are not touched by the localization process
 
   This function doesn't respect any kind of markup that uses words,
@@ -42,33 +44,41 @@ defmodule I18n.Pseudolocalization.TextPseudolocalization do
       iex> alias I18n.Pseudolocalization.TextPseudolocalization
       I18n.Pseudolocalization.TextPseudolocalization
 
-      iex> TextPseudolocalization.pseudolocalize("One")
-      "Òñê~"
+      iex> TextPseudolocalization.pseudolocalize("One") |> to_string()
+      "[Òñê~]"
 
-      iex> TextPseudolocalization.pseudolocalize("Two")
-      "Ťẁø~"
+      iex> TextPseudolocalization.pseudolocalize("Two") |> to_string()
+      "[Ťẁø~]"
 
-      iex> TextPseudolocalization.pseudolocalize("This is an example sentence.")
-      "Ťȟıš~ ıš àñ êẋàɱƥĺê~~ šêñťêñċê~~."
+      iex> TextPseudolocalization.pseudolocalize("This is an example sentence.") |> to_string()
+      "[Ťȟıš~ ıš àñ êẋàɱƥĺê~~ šêñťêñċê~~.]"
 
-      iex> TextPseudolocalization.pseudolocalize("sesquipedalian")
-      "šêšʠüıƥêđàĺıàñ~~~~"
+      iex> TextPseudolocalization.pseudolocalize("sesquipedalian") |> to_string()
+      "[šêšʠüıƥêđàĺıàñ~~~~]"
 
-      iex> TextPseudolocalization.pseudolocalize("With punctuation.")
-      "Ẃıťȟ~ ƥüñċťüàťıøñ~~~."
+      iex> TextPseudolocalization.pseudolocalize("With punctuation.") |> to_string()
+      "[Ẃıťȟ~ ƥüñċťüàťıøñ~~~.]"
 
-      iex> TextPseudolocalization.pseudolocalize("(parenthesis)")
-      "(ƥàȓêñťȟêšıš~~~)"
+      iex> TextPseudolocalization.pseudolocalize("(parenthesis)") |> to_string()
+      "[(ƥàȓêñťȟêšıš~~~)]"
 
-      iex> TextPseudolocalization.pseudolocalize("the quick brown fox jumps over the lazy dog.")
-      "ťȟê~ ʠüıċǩ~ ƀȓøẁñ~ ƒøẋ~ ǰüɱƥš~ øṽêȓ~ ťȟê~ ĺàźÿ~ đøğ~."
+      iex> TextPseudolocalization.pseudolocalize("the quick brown fox jumps over the lazy dog.") |> to_string()
+      "[ťȟê~ ʠüıċǩ~ ƀȓøẁñ~ ƒøẋ~ ǰüɱƥš~ øṽêȓ~ ťȟê~ ĺàźÿ~ đøğ~.]"
 
-      iex> TextPseudolocalization.pseudolocalize("THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG.")
-      "ŤȞȄ~ ꝖÜİĊǨ~ ƁȒÒẂÑ~ ḞÒẌ~ ĴÜṀƤȘ~ ÒṼȄȒ~ ŤȞȄ~ ĹÅŽẎ~ ĐÒĠ~."
+      iex> TextPseudolocalization.pseudolocalize("THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG.") |> to_string()
+      "[ŤȞȄ~ ꝖÜİĊǨ~ ƁȒÒẂÑ~ ḞÒẌ~ ĴÜṀƤȘ~ ÒṼȄȒ~ ŤȞȄ~ ĹÅŽẎ~ ĐÒĠ~.]"
   """
   def pseudolocalize(string) do
+    string
+    |> pseudolocalize_fragment()
+    |> Common.surround_by_brackets()
+  end
+
+  def pseudolocalize_fragment(string) do
     original_words = String.split(string, " ")
-    new_words = Enum.map(original_words, &Common.pseudolocalize_word/1)
-    Enum.join(new_words, " ")
+
+    original_words
+    |> Enum.map(&Common.pseudolocalize_word/1)
+    |> Enum.intersperse(" ")
   end
 end

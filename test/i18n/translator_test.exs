@@ -1,4 +1,4 @@
-defmodule I18n.Backends.GettextBackendTest do
+defmodule I18n.TranslatorTest do
   use ExUnit.Case, async: true
   import ExUnit.CaptureLog
   alias I18n.Fixtures.ExampleModule

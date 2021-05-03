@@ -8,7 +8,7 @@ defmodule I18n.Pseudolocalization.EndToEndTest do
         ExampleModule.g("user") |> to_string()
       end)
 
-    assert message == "Ȟêĺĺø~ üšêȓ~!"
+    assert message == "[Ȟêĺĺø~ üšêȓ~!]"
   end
 
   test "pseudolocalization of html as normal text" do
@@ -18,7 +18,7 @@ defmodule I18n.Pseudolocalization.EndToEndTest do
       end)
 
     assert message ==
-             "Ťȟıš~ ɱêššàğê~~ ċøñťàıñš~~ <šťȓøñğ>ȟťɱĺ~~~~ ťàğš</šťȓøñğ>~~~~ &àɱƥ~; ñàšťÿ~ šťüƒƒ~..."
+             "[Ťȟıš~ ɱêššàğê~~ ċøñťàıñš~~ <šťȓøñğ>ȟťɱĺ~~~~ ťàğš</šťȓøñğ>~~~~ &àɱƥ~; ñàšťÿ~ šťüƒƒ~...]"
   end
 
   test "pseudolocalization of html as html" do
@@ -28,6 +28,6 @@ defmodule I18n.Pseudolocalization.EndToEndTest do
       end)
 
     assert message ==
-             "Ťȟıš~ ɱêššàğê~~ ċøñťàıñš~~ <strong>ȟťɱĺ~ ťàğš~</strong> &amp; ñàšťÿ~ šťüƒƒ~..."
+             "[Ťȟıš~ ɱêššàğê~~ ċøñťàıñš~~ <strong>ȟťɱĺ~ ťàğš~</strong> &amp; ñàšťÿ~ šťüƒƒ~...]"
   end
 end
