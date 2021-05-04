@@ -19,7 +19,7 @@
         {
           "locale": "pt-PT",
           "comment": "",
-          "text": "{nr_photos, plural,\n  =0 {{user} não tirou fotos nenhumas.}\n  =1 {{user} tirou uma foto.}\n  other {{user} tirou # fotos.}}"
+          "text": "{nr_photos, plural,\n  =0 {{user} não tirou fotografias nenhumas.}\n  =1 {{user} tirou 1 fotografia.}\n  other {{user} tirou # fotografias.}}"
         }
       ]
     },
