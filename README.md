@@ -96,11 +96,11 @@ By default, extracted messages and translations in all languages are stored in a
 
 The `I18n.t/2` macro reads the locale from the process dictionary at runtime.
 
-`Cldr.put_locale/1` can be used to change the locale of all backends for
+`Cldr.put_locale/1` can be used to change the locale for
 the current Elixir process. That's the preferred mechanism for setting the
 locale at runtime.
 
-Similarly, `Cldr.get_locale/0` gets the locale for all backends in the
+Similarly, `Cldr.get_locale/0` gets the locale for the
 current process. As mentioned above, the locale is stored **per-process**
 (in the process dictionary): this means that the locale must be set
 in every new process in order to have the right locale available for that process.
