@@ -1,3 +1,4 @@
+![Logo](priv/logo.svg)
 # I18n
 
 The `I18n` module provides a way of localizing your application

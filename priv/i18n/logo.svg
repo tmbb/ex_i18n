@@ -9,9 +9,9 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="64"
-   height="64"
-   viewBox="0 0 64.000001 64.000001"
+   width="106.56724"
+   height="101.02746"
+   viewBox="0 0 106.56724 101.02746"
    version="1.1"
    id="SVGRoot"
    inkscape:version="0.92.1 r15371"
@@ -23,9 +23,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="3.3828125"
-     inkscape:cx="-9.5794654"
-     inkscape:cy="-27.950307"
+     inkscape:zoom="2.8284271"
+     inkscape:cx="-14.870295"
+     inkscape:cy="34.016903"
      inkscape:document-units="px"
      inkscape:current-layer="text82-4"
      showgrid="false"
@@ -47,18 +47,6 @@
       <rect
          style="opacity:1;fill:#ffffff;fill-opacity:0.65217393;stroke:#000000;stroke-width:0.75590551;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:markers fill stroke"
          id="rect3792"
-         width="11.048546"
-         height="12.374367"
-         x="46.138718"
-         y="0.36038959"
-         transform="scale(-1,1)" />
-    </clipPath>
-    <clipPath
-       clipPathUnits="userSpaceOnUse"
-       id="clipPath3790-6">
-      <rect
-         style="opacity:1;fill:#ffffff;fill-opacity:0.65217393;stroke:#000000;stroke-width:0.75590551;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:markers fill stroke"
-         id="rect3792-5"
          width="11.048546"
          height="12.374367"
          x="46.138718"
@@ -97,7 +85,7 @@
      id="layer1"
      inkscape:groupmode="layer"
      inkscape:label="Layer 1"
-     transform="translate(0.02296855,0.00981077)">
+     transform="translate(17.975265,-0.10977236)">
     <text
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10.66666698px;line-height:1.25;font-family:Garamond;-inkscape-font-specification:Garamond;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none"
@@ -195,9 +183,36 @@
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="csccsccac" />
     <g
+       id="g149"
+       transform="matrix(1.075891,0,0,1.075891,-13.198599,-2.3500135)">
+      <g
+         aria-label="↽"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:47.10594177px;line-height:1.25;font-family:'Gentium Basic';-inkscape-font-specification:'Gentium Basic';letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:4.41618204"
+         id="text82">
+        <path
+           d="M -4.4397304,84.157988 H 30.038691 v 3.910161 H 2.000535 l 5.359221,5.359221 -2.7601138,2.760113 -9.0393726,-9.039372 z"
+           style="stroke-width:4.41618204"
+           id="path174" />
+      </g>
+      <path
+         style="opacity:1;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1.13650572;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:markers fill stroke"
+         d="m 15.625,84.1875 h 78.90625 v 3.875 H 15.625 Z"
+         id="rect102" />
+    </g>
+    <g
        aria-label="↽"
        transform="scale(-1)"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:50.68085861px;line-height:1.25;font-family:'Gentium Basic';-inkscape-font-specification:'Gentium Basic';letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:4.75133038"
-       id="text82-4" />
+       id="text82-4">
+      <path
+         d="m -88.591976,-84.006096 h 37.095023 v 4.206907 h -30.166 l 5.765938,5.765938 -2.969582,2.969581 -9.725379,-9.725379 z"
+         style="stroke-width:4.75133038"
+         id="path170" />
+    </g>
+    <path
+       transform="scale(-1)"
+       style="opacity:1;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1.22275627;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:markers fill stroke"
+       d="m -67.004509,-83.97435 h 84.894524 v 4.169077 h -84.894524 z"
+       id="rect102-3" />
   </g>
 </svg>
