@@ -31,7 +31,7 @@ defmodule I18n.TranslatorTest do
   test "message not extracted - logs a warning in any locale" do
     assert capture_log(fn ->
              message = ExampleModule.j() |> to_string()
-             # also text the message content, since we're at it
+             # also tet the message content, since we're at it
              assert message == "message not extracted"
            end) =~ "I18n - message not extracted"
 

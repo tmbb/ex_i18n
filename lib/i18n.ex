@@ -2,7 +2,8 @@ defmodule I18n do
   @moduledoc File.read!("README.md")
 
   require ExUnit.Assertions, as: Assertions
-  alias I18n.Messages.{
+  require Logger
+  alias I18n.{
     InlineMessage,
     MessageLocation
   }
@@ -12,22 +13,73 @@ defmodule I18n do
   alias I18n.MessageHandlers.IcuMessageHandler
 
   defmacro __using__(opts \\ []) do
+    body = Keyword.get(opts, :do, nil)
     domain = Keyword.get(opts, :domain)
     Assertions.assert((domain == nil) or (is_binary(domain)))
 
     quote do
-      require unquote(__MODULE__)
-      @before_compile unquote(__MODULE__)
-
+      # Make the `I18n.t/2` macro available to what comes next
+      require I18n
+      # Register the attributes we'll need available when we translate messages
+      # or run ou @before_compile hook.
       Module.put_attribute(__MODULE__, :__i18n_global_domain__, unquote(domain))
-
       Module.register_attribute(__MODULE__, :__i18n_messages__, accumulate: true)
+
+      # Run the expressions enclosed between the `do` and `end`.
+      # These expressions probably define some @before_compile hooks themselves,
+      # and those hooks may define functions which use the `I18n.t/2` macro.
+      #
+      # If those functions are defined after we define our own `before_compile` hook,
+      # the messages there won't be persisted in the `__i18n_messages__/0` function
+      # and we won't be able to extract them.
+      #
+      # This happens with Phoenix views and templates, for example.
+      # Phoenix compiles your templates into functions inside the view module,
+      # which naturally get access to the macros you've imported/required there,
+      # like the `I18n.t/2` macro, for example.
+      #
+      # We need run/splice these expressions BEFORE we register our `@before_compile` hook.
+      unquote(body)
+
+      # Now we're sure that all `@before_compile` hooks for this module have been registered
+      # and can now register our own.
+      # This way, we're sure our hook will be the last to run and that all functions defined
+      # by `@before_compile` hooks have already been defined.
+      # This means the `I18n.t/2` macro inside those functions has already been invoked
+      # and the translations have been registered in the `@__i18n_messages__` attribute.
+      @before_compile I18n
     end
   end
 
+  @doc false
+  defmacro consolidate_translations() do
+    # A hack to consolidate translations whenever we want.
+    # Im not sure this will be needed, so hide it from the docs for now.
+    quote do
+      @before_compile {I18n, :before_compile_non_overridable__}
+    end
+  end
+
+  @doc false
   defmacro __before_compile__(_env) do
     quote do
       def __i18n_messages__(), do: @__i18n_messages__
+      # Make this overridable
+      defoverridable __i18n_messages__: 0
+    end
+  end
+
+  @doc false
+  defmacro __before_compile_non_overridable__(_env) do
+    quote do
+      def __i18n_messages__(), do: @__i18n_messages__
+    end
+  end
+
+  @doc false
+  def maybe_register_messages_attribute(module) do
+    current_attr_value = Module.get_attribute(module, :__i18n_messages__, :undefined)
+    if current_attr_value == :undefined do
     end
   end
 
@@ -115,6 +167,8 @@ defmodule I18n do
     {:ok, parsed} = IcuMessageHandler.parse(string)
 
     Module.put_attribute(module, :__i18n_messages__, message)
+
+    # Logger.debug("`I18n.t/2` macro invoked inside `#{inspect(module)}`")
 
     quote do
       I18n.Translator.translate(

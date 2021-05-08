@@ -1,6 +1,4 @@
 defmodule I18n.Fixtures.ExampleModule do
-  IO.puts("I'm being compiled!")
-
   use I18n
   # Note that I don't need to require or import a I18n backend here.
   # I just use the I18n library, and once a backend is configured

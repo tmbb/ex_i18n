@@ -1,8 +1,8 @@
-defmodule I18n.Messages.Message do
+defmodule I18n.Message do
   @moduledoc false
   @type t() :: %__MODULE__{}
 
-  alias I18n.Messages.{
+  alias I18n.{
     MessageLocation,
     MessageTranslation,
     MessageHash

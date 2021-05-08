@@ -2,11 +2,7 @@ defmodule I18n.Application do
   @moduledoc false
   use Application
 
-  alias I18n.{
-    InvisibleMarker,
-    Translator
-  }
-
+  alias I18n.Translator
   require Logger
 
   def start(_type, _args) do
@@ -14,8 +10,6 @@ defmodule I18n.Application do
     opts = [strategy: :one_for_one, name: I18n.Supervisor]
 
     # Initialize the stateful parts of the application:
-    # * The InvisibleMarker system
-    InvisibleMarker.setup()
     # * The translations in the translator
     Translator.setup()
 

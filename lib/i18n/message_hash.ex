@@ -1,4 +1,4 @@
-defmodule I18n.Messages.MessageHash do
+defmodule I18n.MessageHash do
   @moduledoc false
 
   @doc """

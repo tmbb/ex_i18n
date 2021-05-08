@@ -1,4 +1,4 @@
-defmodule I18n.Messages.MessageLocation do
+defmodule I18n.MessageLocation do
   @moduledoc false
 
   @derive Jason.Encoder
@@ -10,9 +10,6 @@ defmodule I18n.Messages.MessageLocation do
   def new(opts) do
     struct(__MODULE__, opts)
   end
-
-  defp parse_application(nil), do: nil
-  defp parse_application(string), do: String.to_existing_atom(string)
 
   def from_map(map) do
     message_location = new(map)

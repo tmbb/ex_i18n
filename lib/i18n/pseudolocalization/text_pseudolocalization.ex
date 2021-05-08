@@ -45,28 +45,28 @@ defmodule I18n.Pseudolocalization.TextPseudolocalization do
       I18n.Pseudolocalization.TextPseudolocalization
 
       iex> TextPseudolocalization.pseudolocalize("One") |> to_string()
-      "[Òñê~]"
+      "⟪Òñê~⟫"
 
       iex> TextPseudolocalization.pseudolocalize("Two") |> to_string()
-      "[Ťẁø~]"
+      "⟪Ťẁø~⟫"
 
       iex> TextPseudolocalization.pseudolocalize("This is an example sentence.") |> to_string()
-      "[Ťȟıš~ ıš àñ êẋàɱƥĺê~~ šêñťêñċê~~.]"
+      "⟪Ťȟıš~ ıš àñ êẋàɱƥĺê~~ šêñťêñċê~~.⟫"
 
       iex> TextPseudolocalization.pseudolocalize("sesquipedalian") |> to_string()
-      "[šêšʠüıƥêđàĺıàñ~~~~]"
+      "⟪šêšʠüıƥêđàĺıàñ~~~~⟫"
 
       iex> TextPseudolocalization.pseudolocalize("With punctuation.") |> to_string()
-      "[Ẃıťȟ~ ƥüñċťüàťıøñ~~~.]"
+      "⟪Ẃıťȟ~ ƥüñċťüàťıøñ~~~.⟫"
 
       iex> TextPseudolocalization.pseudolocalize("(parenthesis)") |> to_string()
-      "[(ƥàȓêñťȟêšıš~~~)]"
+      "⟪(ƥàȓêñťȟêšıš~~~)⟫"
 
       iex> TextPseudolocalization.pseudolocalize("the quick brown fox jumps over the lazy dog.") |> to_string()
-      "[ťȟê~ ʠüıċǩ~ ƀȓøẁñ~ ƒøẋ~ ǰüɱƥš~ øṽêȓ~ ťȟê~ ĺàźÿ~ đøğ~.]"
+      "⟪ťȟê~ ʠüıċǩ~ ƀȓøẁñ~ ƒøẋ~ ǰüɱƥš~ øṽêȓ~ ťȟê~ ĺàźÿ~ đøğ~.⟫"
 
       iex> TextPseudolocalization.pseudolocalize("THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG.") |> to_string()
-      "[ŤȞȄ~ ꝖÜİĊǨ~ ƁȒÒẂÑ~ ḞÒẌ~ ĴÜṀƤȘ~ ÒṼȄȒ~ ŤȞȄ~ ĹÅŽẎ~ ĐÒĠ~.]"
+      "⟪ŤȞȄ~ ꝖÜİĊǨ~ ƁȒÒẂÑ~ ḞÒẌ~ ĴÜṀƤȘ~ ÒṼȄȒ~ ŤȞȄ~ ĹÅŽẎ~ ĐÒĠ~.⟫"
   """
   def pseudolocalize(string) do
     string

@@ -13,78 +13,31 @@ defmodule I18n.Translator do
 
   @persistent_term_translations_key {I18n, :translations}
   @persistent_term_extracted_hash_set_key {I18n, :extracted_hash_set}
+  @persistent_term_translator_data_key {I18n, :translator_data}
 
-  @doc """
-  Setup the translator system, by populating the map with the translations.
-  """
-  def setup(path \\ nil) do
-    translations_path =
-      case path do
-        nil -> Config.translations_path()
-        other -> other
-      end
-
-    translation_data = TranslationData.load_translation_data!(translations_path)
-
-    translations =
-      for {hash, message} <- translation_data.messages do
-        for {locale_name, translation} <- message.translations do
-          text = translation.text
-          {:ok, parsed} = IcuMessageHandler.parse(text)
-
-          {{hash, locale_name}, parsed}
+  # Return the original iolist and maybe log a warning if the message
+  # hasn't been translayed yet.
+  defmacrop iolist_maybe_with_warning(iolist, hash, message) do
+    quote do
+      (
+        unless extracted_hash?(unquote(hash)) do
+          Logger.warn(fn ->
+            message = unquote(message)
+            file = message.location.file
+            line = message.location.line
+            # The tests depend on this message prefix!
+            # If you change the prefix, change the tests too.
+            "I18n - message not extracted (#{file}:#{line}): \"#{message.text}\""
+          end)
         end
-      end
 
-    persistent_map =
-      translations
-      |> List.flatten()
-      |> Enum.into(%{})
-
-    put_translations(persistent_map)
-
-    hashes = Enum.map(translation_data.messages, fn {hash, _message} -> hash end)
-    hash_map_set = MapSet.new(hashes)
-
-    put_extracted_hash_set(hash_map_set)
-
-    :ok
+        unquote(iolist)
+      )
+    end
   end
 
-  defp lookup_translation({_hash, _locale} = key) do
-    map = get_translations()
-    Map.fetch(map, key)
-  end
-
-  @doc """
-  Get the (global) translations map.
-  """
-  def get_translations() do
-    :persistent_term.get(@persistent_term_translations_key)
-  end
-
-  @doc """
-  Set the (global) translations map.
-  """
-  def put_translations(value) do
-    :persistent_term.put(@persistent_term_translations_key, value)
-  end
-
-  @doc """
-  Put the set of extracted hashes so that we can warn the user when
-  a non-extracted message is used.
-  """
-  def put_extracted_hash_set(value) do
-    :persistent_term.put(@persistent_term_extracted_hash_set_key, value)
-  end
-
-  @doc """
-  Test whether the current hash belongs to a message that has been already extracted.
-  """
-  def extracted_hash?(hash) do
-    map_set = :persistent_term.get(@persistent_term_extracted_hash_set_key)
-    MapSet.member?(map_set, hash)
-  end
+  # Main translation function.
+  # This function will use the data in the persistent part to translate a given message.
 
   @doc """
   Translates a message.
@@ -98,12 +51,13 @@ defmodule I18n.Translator do
     # TODO: should we use the locale as the full key?
     translation_lookup_key = {hash, locale_name}
 
-    translated_iolist =
+    {is_pseudo?, translated_iolist} =
       case lookup_translation(translation_lookup_key) do
         # We've found a translation. Format the translated message.
         # This is the deafault case in production if everything goes well.
         {:ok, parsed_translation} ->
-          IcuMessageHandler.format(parsed_translation, bindings, locale: locale)
+          iolist = IcuMessageHandler.format(parsed_translation, bindings, locale: locale)
+          {false, iolist}
 
         # We didn't find a translation. Format the original message.
         :error ->
@@ -120,7 +74,8 @@ defmodule I18n.Translator do
             nil ->
               # No pseudolocalization! we can return the original iolist
               # (and log a warning if the message hasn't been extracted)
-              iolist_maybe_with_warning(original_iolist, hash, message)
+              iolist = iolist_maybe_with_warning(original_iolist, hash, message)
+              {false, iolist}
 
             extension_list when is_list(extension_list) ->
               cond do
@@ -129,47 +84,134 @@ defmodule I18n.Translator do
                   # the pseudolocalization functions need a string in order to be intelligent
                   # when handling punctuation characters.
                   original_text = to_string(original_iolist)
-                  Pseudolocalization.pseudolocalize_text(original_text)
+                  pseudolocalized_iolist = Pseudolocalization.pseudolocalize_text(original_text)
+                  {true, pseudolocalized_iolist}
 
                 "pseudoht" in extension_list ->
                   # Same as above
                   original_html = to_string(original_iolist)
-                  Pseudolocalization.pseudolocalize_html(original_html)
+                  pseudolocalized_iolist = Pseudolocalization.pseudolocalize_html(original_html)
+                  {true, pseudolocalized_iolist}
 
                 true ->
                   # No (known) pseudolocalization! we can return the original iolist
                   # (and log a warning if the message hasn't been extracted)
-                  iolist_maybe_with_warning(original_iolist, hash, message)
+                  iolist = iolist_maybe_with_warning(original_iolist, hash, message)
+                  {false, iolist}
               end
 
             _other ->
               # No weird extensions! We can return the original iolist
               # (and log a warning if the message hasn't been extracted)
-              iolist_maybe_with_warning(original_iolist, hash, message)
+              iolist = iolist_maybe_with_warning(original_iolist, hash, message)
+              {false, iolist}
           end
       end
 
-    # TODO: disable this at compile time to save an ETS lookup?
-    if Config.invisible_markers?() do
-      InvisibleMarker.with_id_encoded_as_invisible_marker(translated_iolist, hash, locale, [])
+    if InvisibleMarker.invisible_marker_active?() && not(is_pseudo?) do
+      InvisibleMarker.encode_iolist(translated_iolist, hash, locale, [])
     else
       translated_iolist
     end
   end
 
-  # Return the original iolist and maybe log a warning if the message
-  # hasn't been translayed yet.
-  defp iolist_maybe_with_warning(iolist, hash, message) do
-    unless extracted_hash?(hash) do
-      Logger.warn(fn ->
-      file = message.location.file
-      line = message.location.line
-      # The tests depend on this message prefix!
-      # If you change the prefix, change the tests too.
-      "I18n - message not extracted (#{file}:#{line}): \"#{message.text}\""
-      end)
-    end
+  @doc """
+  Updates the current translation data with the new value.
+  The old value is discarded.
 
-    iolist
+  This function will atomically update all the persisten terms so that
+  they don't get out of sync.
+  It's the only API that allows the user to update the persistent terms from
+  outside of this module.
+  """
+  @spec update_translation_data(TranslationData.t()) :: :ok
+  def update_translation_data(%TranslationData{} = translation_data) do
+    translations =
+      for {hash, message} <- translation_data.messages do
+        for {locale_name, translation} <- message.translations do
+          text = translation.text
+          {:ok, parsed} = IcuMessageHandler.parse(text)
+
+          {{hash, locale_name}, parsed}
+        end
+      end
+
+    persistent_map =
+      translations
+      |> List.flatten()
+      |> Enum.into(%{})
+
+
+    hashes = Enum.map(translation_data.messages, fn {hash, _message} -> hash end)
+    hash_map_set = MapSet.new(hashes)
+
+    # Update all the persisten terms:
+    put_translations(persistent_map)
+    put_extracted_hash_set(hash_map_set)
+    put_translation_data(translation_data)
+
+    :ok
+  end
+
+  @doc """
+  Setup the translator system, by populating the map with the translations.
+  """
+  @spec setup(Path.t()) :: :ok
+  def setup(path \\ nil) do
+    translations_path =
+      case path do
+        nil -> Config.translations_path()
+        other -> other
+      end
+
+    translation_data = TranslationData.load_translation_data!(translations_path)
+    update_translation_data(translation_data)
+  end
+
+  defp lookup_translation({_hash, _locale} = key) do
+    map = get_translations()
+    Map.fetch(map, key)
+  end
+
+  @doc """
+  Get the translation data from the persistent term.
+  This can be used to be able to live-edit the translation data for the app.
+  After editing the translation data, you must call `#{__MODULE__}.update_translation_data/2`
+  to make those translations available to the rest of the app.
+  """
+  def get_translation_data() do
+    :persistent_term.get(@persistent_term_translator_data_key)
+  end
+
+  # Private
+
+  defp put_translation_data(value) do
+    # Put the translation data in the persistent term.
+    # This will be used to be able to live-edit the translation data for the app.
+    :persistent_term.put(@persistent_term_translator_data_key, value)
+  end
+
+  defp get_translations() do
+    # Get the (global) translations map.
+    # This is the map we will use to lookup the translations.
+    :persistent_term.get(@persistent_term_translations_key)
+  end
+
+  defp put_translations(value) do
+    # Set the (global) translations map.
+    # This is the map we will use to lookup the translations.
+    :persistent_term.put(@persistent_term_translations_key, value)
+  end
+
+  defp put_extracted_hash_set(value) do
+    # Put the set of extracted hashes so that we can warn the user when
+    # a non-extracted message is used.
+    :persistent_term.put(@persistent_term_extracted_hash_set_key, value)
+  end
+
+  defp extracted_hash?(hash) do
+    # Test whether the current hash belongs to a message that has been already extracted.
+    map_set = :persistent_term.get(@persistent_term_extracted_hash_set_key)
+    MapSet.member?(map_set, hash)
   end
 end

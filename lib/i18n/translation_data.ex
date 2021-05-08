@@ -1,5 +1,6 @@
 defmodule I18n.TranslationData do
-  alias I18n.Messages.Message
+  alias I18n.Message
+  alias I18n.MessageTranslation
 
   @derive Jason.Encoder
 
@@ -34,6 +35,10 @@ defmodule I18n.TranslationData do
     %{translation_data | deleted_messages: %{}}
   end
 
+  def get_message(%__MODULE__{} = translation_data, hash) do
+    Map.get(translation_data.messages, hash)
+  end
+
   @doc """
   Add a new locale to the translation data.
   """
@@ -41,35 +46,51 @@ defmodule I18n.TranslationData do
     %{translation_data | locales: [locale | translation_data.locales]}
   end
 
-  defp from_map(map) do
-    locales = Map.fetch!(map, :locales)
-    messages = Map.fetch!(map, :messages)
-    deleted_messages = Map.fetch!(map, :deleted_messages)
-
-    decoded_messages = make_messages_map(messages)
-    decoded_deleted_messages = make_messages_map(deleted_messages)
-
-    new(
-      locales: locales,
-      messages: decoded_messages,
-      deleted_messages: decoded_deleted_messages
-    )
+  def put_translation(%__MODULE__{} = translation_data, hash, %MessageTranslation{} = new_translation) do
+    {:ok, message} = Map.fetch(translation_data.messages, hash)
+    new_translations = Map.put(message.translations, new_translation.locale, new_translation)
+    new_message = %{message | translations: new_translations}
+    new_messages = Map.put(translation_data.messages, hash, new_message)
+    %{translation_data | messages: new_messages}
   end
 
-  defp make_messages_map(messages) do
-    for encoded_message <- messages, into: %{} do
-      decoded_message = Message.from_map(encoded_message)
-      key = decoded_message.hash
+  def translate_message(%__MODULE__{} = translation_data, hash, locale_name, translation_text) do
+    # Get the old translation (if it exists)
+    {:ok, message} = Map.fetch(translation_data.messages, hash)
+    old_translation = Map.fetch(message.translations, locale_name)
+    # Create a new translation from scratch or wdit the old translation
+    new_translation =
+      case old_translation do
+        :error ->
+          MessageTranslation.new(locale: locale_name, text: translation_text)
 
-      {key, decoded_message}
-    end
+        {:ok, translation} ->
+          %{translation | text: translation_text}
+      end
+
+    put_translation(translation_data, hash, new_translation)
   end
 
-  defp message_list_to_map(messages) do
-    for message <- messages, into: %{} do
-      key = message.hash
-      {key, message}
-    end
+  def get_translations_by_locale(%__MODULE__{} = translation_data, locale) do
+    translation_data.messages
+    |> Enum.map(fn {_hash, message} -> Map.get(message.translations, locale) end)
+    |> Enum.reject(fn value -> value == nil end)
+  end
+
+  def count_messages(%__MODULE__{} = translation_data) do
+    map_size(translation_data.messages)
+  end
+
+  def untranslated_messages(%__MODULE__{} = translation_data) do
+    map_size(translation_data.messages)
+  end
+
+  @doc """
+  Deletes a locale from the translation data.
+  """
+  def delete_locale(%__MODULE__{} = translation_data, locale) do
+    new_locales = List.delete(translation_data.locales, locale)
+    %{translation_data | locales: new_locales}
   end
 
   def incorporate_messages(%__MODULE__{} = translation_data, message_list, _options \\ []) do
@@ -193,6 +214,18 @@ defmodule I18n.TranslationData do
   """
   @spec persist_translation_data!(__MODULE__.t(), Path.t()) :: :ok
   def persist_translation_data!(data, path) do
+    encoded = translation_data_to_json(data)
+    # Create directory if it doesn't exist
+    File.mkdir_p!(Path.dirname(path))
+    File.write!(path, encoded)
+    :ok
+  end
+
+  @doc """
+  Encodes a `%#{inspect(__MODULE__)}{}` struct as JSON.
+  Returns the JSON binary.
+  """
+  def translation_data_to_json(data) do
     message_list =
       # Start with a map of translations
       data.messages
@@ -203,8 +236,37 @@ defmodule I18n.TranslationData do
 
     deleted_message_list = Map.values(data.deleted_messages)
     new_data = %{data | messages: message_list, deleted_messages: deleted_message_list}
-    encoded = Jason.encode!(new_data, pretty: true)
-    File.write!(path, encoded)
-    :ok
+    Jason.encode!(new_data, pretty: true)
+  end
+
+  defp from_map(map) do
+    locales = Map.fetch!(map, :locales)
+    messages = Map.fetch!(map, :messages)
+    deleted_messages = Map.fetch!(map, :deleted_messages)
+
+    decoded_messages = make_messages_map(messages)
+    decoded_deleted_messages = make_messages_map(deleted_messages)
+
+    new(
+      locales: locales,
+      messages: decoded_messages,
+      deleted_messages: decoded_deleted_messages
+    )
+  end
+
+  defp make_messages_map(messages) do
+    for encoded_message <- messages, into: %{} do
+      decoded_message = Message.from_map(encoded_message)
+      key = decoded_message.hash
+
+      {key, decoded_message}
+    end
+  end
+
+  defp message_list_to_map(messages) do
+    for message <- messages, into: %{} do
+      key = message.hash
+      {key, message}
+    end
   end
 end

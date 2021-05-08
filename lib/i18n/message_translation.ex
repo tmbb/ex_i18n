@@ -1,10 +1,11 @@
-defmodule I18n.Messages.MessageTranslation do
+defmodule I18n.MessageTranslation do
 
   @derive Jason.Encoder
 
   defstruct text: "",
             comments: "",
-            locale: ""
+            locale: "",
+            reviewed: false
 
   def new(opts) do
     struct(__MODULE__, opts)

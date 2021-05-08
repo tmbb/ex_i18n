@@ -178,6 +178,6 @@ defmodule I18n.Pseudolocalization.Common do
   end
 
   def surround_by_brackets(iolist) do
-    ["[", iolist, "]"]
+    ["⟪", iolist, "⟫"]
   end
 end

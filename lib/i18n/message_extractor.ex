@@ -1,18 +1,10 @@
 defmodule I18n.MessageExtractor do
   @moduledoc false
 
-  alias I18n.Messages.Message
+  alias I18n.Message
   alias I18n.TranslationData
 
   defp extract_all_inline_messages(extra_modules, predicate) do
-    # module_lists =
-    #   for {app, _dsc, _vsn} <- :application.loaded_applications() do
-    #     case :application.get_key(app, :modules) do
-    #       {:ok, modules} -> modules
-    #       _ -> []
-    #     end
-    #   end
-
     modules = Enum.map(:code.all_loaded(), fn {m, _} -> m end) ++ extra_modules
 
     Enum.flat_map(modules, fn module ->

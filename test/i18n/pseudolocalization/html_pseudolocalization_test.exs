@@ -24,18 +24,18 @@ defmodule I18n.Pseudolocalization.HtmlPseudolocalizationTest do
   end
 
   test "empty string" do
-    assert pseudolocalize_html("") == "[]"
+    assert pseudolocalize_html("") == "⟪⟫"
   end
 
   test "examples" do
     # HTML tags
-    assert pseudolocalize_html("a <b>thing</b>") == "[à <b>ťȟıñğ~</b>]"
+    assert pseudolocalize_html("a <b>thing</b>") == "⟪à <b>ťȟıñğ~</b>⟫"
     # HTML entity
-    assert pseudolocalize_html("a &amp; b") == "[à &amp; ƀ]"
+    assert pseudolocalize_html("a &amp; b") == "⟪à &amp; ƀ⟫"
     # HTML without optional semicolon
-    assert pseudolocalize_html("a &amp b") == "[à &amp ƀ]"
+    assert pseudolocalize_html("a &amp b") == "⟪à &amp ƀ⟫"
     # HTML tags and entities
-    assert pseudolocalize_html("<i>a</i> &amp; b") == "[<i>à</i> &amp; ƀ]"
+    assert pseudolocalize_html("<i>a</i> &amp; b") == "⟪<i>à</i> &amp; ƀ⟫"
   end
 
   property "tags are preserved" do
@@ -45,7 +45,7 @@ defmodule I18n.Pseudolocalization.HtmlPseudolocalizationTest do
             close <- StreamData.member_of([">", "/>"]),
             string = open <> tag_name <> close
           ) do
-      assert pseudolocalize_html(string) == "[" <> string <> "]"
+      assert pseudolocalize_html(string) == "⟪" <> string <> "⟫"
     end
   end
 

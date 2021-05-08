@@ -19,7 +19,7 @@ defmodule I18n.Pseudolocalization.TextPseudolocalizationTest do
   end
 
   test "empty string" do
-    assert pseudolocalize_text("") == "[]"
+    assert pseudolocalize_text("") == "⟪⟫"
   end
 
   property "no latin characters remain in the string after pseudolocalization (ascii string)" do

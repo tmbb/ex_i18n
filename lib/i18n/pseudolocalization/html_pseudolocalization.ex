@@ -166,19 +166,19 @@ defmodule I18n.Pseudolocalization.HtmlPseudolocalization do
       I18n.Pseudolocalization.HtmlPseudolocalization
 
       iex> HtmlPseudolocalization.pseudolocalize("normal text") |> to_string()
-      "[ñøȓɱàĺ~~ ťêẋť~]"
+      "⟪ñøȓɱàĺ~~ ťêẋť~⟫"
 
       iex> HtmlPseudolocalization.pseudolocalize("<a-tag>") |> to_string()
-      "[<a-tag>]"
+      "⟪<a-tag>⟫"
 
       iex> HtmlPseudolocalization.pseudolocalize("Abbot &amp; Costello") |> to_string()
-      "[Åƀƀøť~ &amp; Ċøšťêĺĺø~~]"
+      "⟪Åƀƀøť~ &amp; Ċøšťêĺĺø~~⟫"
 
       iex> HtmlPseudolocalization.pseudolocalize("Abbot &amp Costello") |> to_string() # entity without semicolon
-      "[Åƀƀøť~ &amp Ċøšťêĺĺø~~]"
+      "⟪Åƀƀøť~ &amp Ċøšťêĺĺø~~⟫"
 
       iex> HtmlPseudolocalization.pseudolocalize("<strong>Abbot</strong> &amp Costello") |> to_string()
-      "[<strong>Åƀƀøť~</strong> &amp Ċøšťêĺĺø~~]"
+      "⟪<strong>Åƀƀøť~</strong> &amp Ċøšťêĺĺø~~⟫"
 
   """
   def pseudolocalize(string) do

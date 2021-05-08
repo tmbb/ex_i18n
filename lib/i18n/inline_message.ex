@@ -1,9 +1,9 @@
-defmodule I18n.Messages.InlineMessage do
+defmodule I18n.InlineMessage do
   @moduledoc false
   @type t() :: %__MODULE__{}
 
   alias Cldr.Message.Parser
-  alias I18n.Messages.MessageHash
+  alias I18n.MessageHash
 
   @derive Jason.Encoder
 
