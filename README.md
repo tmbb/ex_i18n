@@ -28,7 +28,7 @@ unless somehow the dependency provides you with an already created `.pot`
 file that you add to your application's, `.pot` files.
 ## Using I18n
 
-To use `I18n`, you must defines a `Cldr` backend and a `I18n` backend.
+To use `I18n`, you must defines a `Cldr` backend.
 Refer to [ex_cldr's documentation](https://hexdocs.pm/ex_cldr/readme.html#introduction) for how to configure a `Cldr` locale.
 
 ```elixir
