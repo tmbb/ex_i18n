@@ -1,5 +1,8 @@
 defmodule I18n.Translator do
-  @moduledoc false
+  @moduledoc """
+  Utilities to store the message translations and to make use of them
+  to actually translate the messages.
+  """
 
   alias I18n.{
     Config,
@@ -7,7 +10,7 @@ defmodule I18n.Translator do
     TranslationData,
     Pseudolocalization
   }
-  alias I18n.MessageHandlers.IcuMessageHandler
+  alias I18n.IcuMessageHandler
 
   require Logger
 
@@ -19,6 +22,9 @@ defmodule I18n.Translator do
   # hasn't been translayed yet.
   defmacrop iolist_maybe_with_warning(iolist, hash, message) do
     quote do
+      # Don't remove these parenteses!
+      # We need this to be a block, so that the first expression is run for the side-effects
+      # and the second expression is returned
       (
         unless extracted_hash?(unquote(hash)) do
           Logger.warn(fn ->
@@ -39,16 +45,14 @@ defmodule I18n.Translator do
   # Main translation function.
   # This function will use the data in the persistent part to translate a given message.
 
-  @doc """
-  Translates a message.
-  """
+  @doc false
   def translate(hash, user_specified_locale, bindings, parsed_original, message) do
     # I18n will use Cldr locales and nothing else; no need to abstract this further.
-    # TODO: make this work with configurable locale providers?
     locale = user_specified_locale || Cldr.get_locale()
     # We'll be using the locale name several times; this line saves us a map lookup.
     locale_name = locale.cldr_locale_name
     # TODO: should we use the locale as the full key?
+    # Probably not because things are much easier if we serialize locales as a string.
     translation_lookup_key = {hash, locale_name}
 
     {is_pseudo?, translated_iolist} =
@@ -108,6 +112,8 @@ defmodule I18n.Translator do
           end
       end
 
+    # Translations with pseudolocalization aren't editable.
+    # It doesn't make sense to add invisible markers to those.
     if InvisibleMarker.invisible_marker_active?() && not(is_pseudo?) do
       InvisibleMarker.encode_iolist(translated_iolist, hash, locale, [])
     else
@@ -119,7 +125,7 @@ defmodule I18n.Translator do
   Updates the current translation data with the new value.
   The old value is discarded.
 
-  This function will atomically update all the persisten terms so that
+  This function will atomically update all the persistent terms so that
   they don't get out of sync.
   It's the only API that allows the user to update the persistent terms from
   outside of this module.
@@ -156,7 +162,7 @@ defmodule I18n.Translator do
   @doc """
   Setup the translator system, by populating the map with the translations.
   """
-  @spec setup(Path.t()) :: :ok
+  @spec setup(Path.t()) :: :ok | :error
   def setup(path \\ nil) do
     translations_path =
       case path do
@@ -164,8 +170,16 @@ defmodule I18n.Translator do
         other -> other
       end
 
-    translation_data = TranslationData.load_translation_data!(translations_path)
-    update_translation_data(translation_data)
+    case TranslationData.load_translation_data(translations_path) do
+      {:ok, translation_data} ->
+        update_translation_data(translation_data)
+        :ok
+
+      {:error, _error_code} ->
+        empty_translation_data = TranslationData.new([])
+        update_translation_data(empty_translation_data)
+        :error
+    end
   end
 
   defp lookup_translation({_hash, _locale} = key) do
@@ -176,7 +190,7 @@ defmodule I18n.Translator do
   @doc """
   Get the translation data from the persistent term.
   This can be used to be able to live-edit the translation data for the app.
-  After editing the translation data, you must call `#{__MODULE__}.update_translation_data/2`
+  After editing the translation data, you must call `#{__MODULE__}.update_translation_data/1`
   to make those translations available to the rest of the app.
   """
   def get_translation_data() do

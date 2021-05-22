@@ -31,13 +31,15 @@ defmodule I18n.Pseudolocalization.TextPseudolocalization do
         as a rule of thumb, one should asusme that foreign language strings
         are 35% longer in other languages
 
+      * Surround the string with `"⟪"` and `"⟫"` so that you can idenify messages
+        that are to big for the containing element (those messages won't be surrounded
+        by `"⟪"` and `"⟫"`).
+
       * Other characters (non-latin characters, punctuation characters, etc.)
         are not touched by the localization process
 
-  This function doesn't respect any kind of markup that uses words,
-  like HTML, XML and others.
-  If you need pseudolocalization of such strings,
-  you must implement your own function.
+  This function doesn't respect any kind of markup that uses words, like HTML, XML and others.
+  If you need pseudolocalization of such strings, you must implement your own function.
 
   ## Examples
 

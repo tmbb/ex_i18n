@@ -1,4 +1,5 @@
 defmodule I18n do
+  @external_resource "README.md"
   @moduledoc File.read!("README.md")
 
   require ExUnit.Assertions, as: Assertions
@@ -10,8 +11,77 @@ defmodule I18n do
 
   # We might support other message handlers in the future.
   # TODO: should we do it? if so, which API should we support?
-  alias I18n.MessageHandlers.IcuMessageHandler
+  alias I18n.IcuMessageHandler
 
+  @doc """
+  Enables the `I18n.t/2` macro for the current module in a way
+  that allows messages to be extracted and translated.
+
+  If you simply `require I18n`, you won't be able to extract messages.
+
+  The simplest way of enabling the `I18n.t/2` macro is to `use I18n`
+  (without arguments). However, because of the way `I18n` uses `@before_compile`
+  hooks, you might have to use it with a `do ... end` block around any code
+  that defines functions in `@before_compile` hooks:
+
+      use I18n do
+        # ...
+        # code that defines other @before_compile hooks
+        # ...
+      end
+
+  The `@before_compile` hooks are usually defined by the `__using__/1` macro
+  of modules. However, Elixir code can define `@before_compile` hooks
+  virtually anywhere. You can always make sure `I18n` works properly by
+  adding the `do ... end` block around the full module contents
+  (but you won't need to do it often, if at all).
+
+  An example where you *need* to use the `do ... end` block is when using
+  `I18n` to internationalize Phoenix applications.
+  For example, the following code will fail to register the messages correctly:
+
+
+      def view do
+        quote do
+          use I18n
+          use Phoenix.View,
+            root: "lib/my_app_web/templates",
+            namespace: MyAppWeb
+
+          # Import convenience functions from controllers
+          import Phoenix.Controller,
+            only: [get_flash: 1, get_flash: 2, view_module: 1, view_template: 1]
+
+          # Include shared imports and aliases for views
+          unquote(view_helpers())
+        end
+      end
+
+  For that to work, you need to envelop the `use ...` expressions in the block:
+
+      def view do
+        quote do
+          # Note the do ... end block:
+          use I18n do
+            use Phoenix.View,
+              root: "lib/my_app_web/templates",
+              namespace: MyAppWeb
+
+            # Import convenience functions from controllers
+            import Phoenix.Controller,
+              only: [get_flash: 1, get_flash: 2, view_module: 1, view_template: 1]
+
+            # Include shared imports and aliases for views
+            unquote(view_helpers())
+          end
+        end
+      end
+
+  ### Implementation Details
+
+  **TODO:** Explain why we need the block around code that defines functions
+  inside `@before_compile` blocks.
+  """
   defmacro __using__(opts \\ []) do
     body = Keyword.get(opts, :do, nil)
     domain = Keyword.get(opts, :domain)
@@ -104,27 +174,35 @@ defmodule I18n do
   It takes two arguments:
 
       * A *compile-time* string
-      * An (optional) *compile-time* keyword list containing several `options`
+      * An (optional) *compile-time* keyword list containing several `options`.
+        These options include the *special options* (as explained below)
+        and the message variables
 
-  It accepts the following options:
+  All the special options end with `!` to unambiguously distinguish them from
+  variables. They are all optional. The complete list of special options is:
 
-      * `:bindings` - variables to interpolate inside the string.
-        Should be a keyword list of the form `[var1: value1, var2: value2]`
-      * `:domain` - the domain of the translations. It must be a compile-time string.
-        Domains will map to file names names inside the `priv/i18n` directory.
-        Of no domain is given, I18n assigns the message to the `"default"`
-        domain.
-      * `:context` - a context to disambiguate equal or similar messages
+      * `:domain!` (`t:String.t/0`) - the domain of the translations.
+        It must be a compile-time string.
+        If the domain is not given, it will be inferred from the `:domain` argument
+        given in the `use I18n` call or from the module name.
+      * `:context!` (`t:String.t/0`) - a context to disambiguate equal or similar messages.
+        If not given, it will default to the empty string.
+      * `:locale!` (`t:Cldr.Locale.t/0`) - a locale in which to render the message.
+        If not given, it will be extracted from the process dictionary using
+        `Cldr.get_locale/1`.
 
   A message is uniquely identified by the following three parameters:
 
       * The `string`
-      * The `domain` (which if not given is assumed to "default")
-      * The `context` (which may be the empty string)
+      * The `domain`
+      * The `context`
 
   I18n is able to lookup all translations in all modules in your application
-  (even dependencies), as long as you `use I18n`
-  (instead of `import I18n).
+  (even dependencies), as long as you `use I18n` (instead of `import I18n`).
+
+  ## Examples
+
+      I18n.t("Hello {guest}!", context!: "a message", guest: guest)
   """
   defmacro t(string, options \\ []) do
     line = __CALLER__.line

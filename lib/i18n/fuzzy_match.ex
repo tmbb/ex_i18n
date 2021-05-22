@@ -1,3 +1,4 @@
 defmodule I18n.FuzyMatch do
-  # def matches()
+  @moduledoc false
+  # TODO: implement fuzzy match
 end

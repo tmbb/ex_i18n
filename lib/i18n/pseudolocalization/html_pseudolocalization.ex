@@ -1,10 +1,14 @@
 defmodule I18n.Pseudolocalization.HtmlPseudolocalization do
   @moduledoc """
-  A module to support pseudolocalization.
+  A module to support pseudolocalization of HTML strings.
   """
   import NimbleParsec
   alias I18n.Pseudolocalization.Common
   alias I18n.Pseudolocalization.TextPseudolocalization
+
+  # To correctly pseudolocalize HTML, we need to parse the tags
+  # and be careful to only apply pseudolocalization to raw text outside
+  # of the tags.
 
   # An HTML tag is basically anything between `<` and `>`.
   # Because HTMl attributes may contain inline CSS and inline JS,
@@ -27,31 +31,13 @@ defmodule I18n.Pseudolocalization.HtmlPseudolocalization do
   hex_encoding = times(ascii_char([?0..?9, ?a..?f, ?A..?F]), min: 1)
   decimal_encoding = times(ascii_char([?0..?9]), min: 1)
 
-  # TODO: use JSON for this, since we're already using JSON for other purposes?
-  #
   # To be as correct as possible, we will parse the list of allowed HTML entities
   # from the JSON file in the original spec.
-  #
-  # To avoid having to depend on a JSON library, we will use split the file
-  # into lines and use regex to extract the name of the HTML entities.
-  #
-  # This only works because the file has been formatted in a specific way.
-  # If the JSON file is changed, we need to check if the following code
-  # is still correct.
   entity_names =
     "lib/I18n/pseudolocalization/data/html_entities.json"
     |> File.read!()
-    # Trim empty newlines that will make the following steps harder
-    |> String.trim()
-    # Split into lines
-    |> String.split("\n")
-    # Delete the first line, which contains only the opening curly brace (`{`)
-    |> List.delete_at(0)
-    # Delete the last line, which that contains only the closing curly brace (`}`)
-    |> List.delete_at(-1)
-    # Extract the entity name from the line (it's the first string in the line)
-    # For these particular strings, we don't need to worry about escaping and such
-    |> Enum.map(fn line -> Map.get(Regex.named_captures(~r/"(?<name>[^"]+)"/, line), "name") end)
+    |> Jason.decode!()
+    |> Map.keys()
 
   html_entity_named =
     entity_names
@@ -152,8 +138,12 @@ defmodule I18n.Pseudolocalization.HtmlPseudolocalization do
         which is still legible (for example, `m → ɱ`, `j → ǰ` )
 
       * Add extra tilde (`~`) characters to words to make them 35% longer.
-        as a rule of thumb, one should asusme that foreign language strings
+        as a rule of thumb, one should assume that foreign language strings
         are 35% longer in other languages
+
+      * Surround the string with `"⟪"` and `"⟫"` so that you can idenify messages
+        that are to big for the containing element (those messages won't be surrounded
+        by `"⟪"` and `"⟫"`).
 
       * Other characters (non-latin characters, numbers, punctuation characters, etc.)
         are not touched by the localization process

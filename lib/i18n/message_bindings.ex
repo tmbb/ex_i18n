@@ -1,8 +1,10 @@
 defmodule I18n.MessageBindings do
+  alias I18n.IcuMessageHandler
+
   defguardp is_simple_format(term) when elem(term, 0) == :simple_format
 
   def bindings(message) when is_binary(message) do
-    with {:ok, parsed} <- Cldr.Message.Parser.parse(message) do
+    with {:ok, parsed} <- IcuMessageHandler.parse(message) do
       bindings(parsed)
     end
   end

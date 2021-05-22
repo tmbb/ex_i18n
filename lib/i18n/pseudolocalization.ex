@@ -4,8 +4,8 @@ defmodule I18n.Pseudolocalization do
 
   Currently it supports the following formats:
 
-      * Raw text
-      * XML and HTML
+    * Raw text
+    * XML and HTML
   """
 
   alias I18n.Pseudolocalization.TextPseudolocalization

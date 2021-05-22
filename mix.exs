@@ -9,7 +9,15 @@ defmodule I18n.MixProject do
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       package: package(),
-      elixirc_paths: elixirc_paths(Mix.env())
+      elixirc_paths: elixirc_paths(Mix.env()),
+
+      # Docs
+      name: "I18n",
+      source_url: "https://github.com/tmbb/ex_18n",
+      homepage_url: "http://github.com/tmbb/ex_i18n",
+      docs: [main: "readme", # The main page in the docs
+            logo: "priv/logo.svg",
+            extras: ["README.md"]]
     ]
   end
 
@@ -30,7 +38,9 @@ defmodule I18n.MixProject do
       # Tests and benchmarks
       {:stream_data, "~> 0.5.0", only: [:dev, :test]},
       {:benchee, "~> 1.0", only: [:dev, :test]},
-      {:benchee_markdown, "~> 0.2", only: [:dev, :test]}
+      {:benchee_markdown, "~> 0.2", only: [:dev, :test]},
+      # Docs
+      {:ex_doc, "~> 0.24", only: [:dev]}
     ]
   end
 

@@ -12,6 +12,7 @@ defmodule I18n.InlineMessage do
             domain: nil,
             location: nil,
             hash: nil
+
   @doc """
   Parse an ICU message. Raises if invalid message.
   """

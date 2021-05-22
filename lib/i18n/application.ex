@@ -9,8 +9,7 @@ defmodule I18n.Application do
     children = []
     opts = [strategy: :one_for_one, name: I18n.Supervisor]
 
-    # Initialize the stateful parts of the application:
-    # * The translations in the translator
+    # Initialize the only stateful part of our application.
     Translator.setup()
 
     Logger.debug("I18.Application started.")

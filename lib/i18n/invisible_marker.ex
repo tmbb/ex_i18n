@@ -34,14 +34,38 @@ defmodule I18n.InvisibleMarker do
   # Invisible encoding prefix
   @invisible_prefix String.duplicate(<< 0x2060::utf8 >>, 2)
 
+  @doc """
+  TODO
+  """
   def invisible_marker_active?() do
     Process.get(@invisible_markers_active, false)
   end
 
-  def put_invisible_marker_activation_state(value) when value in [true, false] do
-    Process.put(@invisible_markers_active, value)
+  @doc """
+  TODO
+  """
+  def activate_invisible_markers() do
+    put_invisible_marker_activation_state(true)
   end
 
+  @doc """
+  TODO
+  """
+  def deactivate_invisible_markers() do
+    put_invisible_marker_activation_state(false)
+  end
+
+  @doc """
+  TODO
+  """
+  def put_invisible_marker_activation_state(value) when value in [true, false] do
+    Process.put(@invisible_markers_active, value)
+    :ok
+  end
+
+  @doc """
+  A map from zero-width space codepoint to the base-4 digits they encode.
+  """
   def zws_to_base4_digit_map() do
     %{
       @zws_0_codepoint => 0,
@@ -51,7 +75,13 @@ defmodule I18n.InvisibleMarker do
     }
   end
 
+  @doc """
+  Encode a single base-4 digit as a zero-width space binary.
+  """
   def base4_digit_to_zws(digit) do
+    # We return binaries isntead of codepoints becausse iolists can't
+    # contain unicode characters outside the ascii range
+    # (this makes total sense, as the BEAM can't assume everything is unicode)
     case digit do
       0 -> @zws_0
       1 -> @zws_1
@@ -60,12 +90,24 @@ defmodule I18n.InvisibleMarker do
     end
   end
 
-  def byte_to_zws(byte) do
+  @doc """
+  Encode a single base-4 digit as a zero-width space codepoint.
+  """
+  def base4_digit_to_zws_codepoint(digit) do
+    case digit do
+      0 -> @zws_0_codepoint
+      1 -> @zws_1_codepoint
+      2 -> @zws_2_codepoint
+      3 -> @zws_3_codepoint
+    end
+  end
+
+  defp byte_to_zws(byte) do
     << z1::2, z2::2, z3::2, z4::2 >> = << byte::8 >>
     Enum.map([z1, z2, z3, z4], &base4_digit_to_zws/1)
   end
 
-  def encode_integer(n) do
+  defp encode_integer(n) do
     << a::8, b::8, c::8 >> = << n :: 24 >>
     [@invisible_prefix | Enum.map([a, b, c], &byte_to_zws/1)]
   end
@@ -105,7 +147,7 @@ defmodule I18n.InvisibleMarker do
     end
   end
 
-  def append_to_translations(hash, locale) do
+  defp append_to_translations(hash, locale) do
     locale_index = update_locales_map(locale)
     hash_index = update_hashes_map(hash, locale_index)
 
@@ -118,13 +160,13 @@ defmodule I18n.InvisibleMarker do
     |> Enum.into(%{})
   end
 
-  def get_invisible_markers_maps() do
-    {_counter, hashes_map} = Process.get(@translations_hashes_key, {0, []})
+  def get_invisible_markers_data() do
+    {_counter, hashes_list} = Process.get(@translations_hashes_key, {0, []})
     {_counter, locales_map} = Process.get(@translations_locales_key, {0, %{}})
     inverted_locales_map = invert_map(locales_map)
 
     %{
-      hashes: hashes_map |> Enum.reverse(),
+      hashes: hashes_list |> Enum.reverse(),
       locales: inverted_locales_map
     }
   end
@@ -132,70 +174,7 @@ defmodule I18n.InvisibleMarker do
   def encode_iolist(iolist, hash, locale, _bindings) do
     hash_index = append_to_translations(hash, locale)
     encoded_hash_index = encode_integer(hash_index)
-    # IO.inspect(hash_index, label: "index")
-    # IO.inspect(encoded_hash_index |> to_string() |> to_charlist() |> Enum.map(fn x -> rem(x, 10) end), label: "encoded_index")
-    # IO.inspect(to_string(iolist), label: "text")
-    # IO.puts("")
+
     [encoded_hash_index, iolist]
   end
-
-  # # def with_id_encoded_as_invisible_marker(translated_message, hash, locale, bindings) do
-  # #   # This uniquely identifies the
-  # #   encoded_translation_id = encode_as_invisible(translation_id)
-  # #   # Return everything in an iolist:
-  # #   [encoded_translation_id, translated_message]
-  # # end
-
-  # def encode_as_invisible(binary), do: [@invisible_prefix | encode_as_invisible_(binary)]
-
-  # defp encode_as_invisible_(<< 0::size(2), rest::bitstring >>), do: [@zws_0 | encode_as_invisible_(rest)]
-  # defp encode_as_invisible_(<< 1::size(2), rest::bitstring >>), do: [@zws_1 | encode_as_invisible_(rest)]
-  # defp encode_as_invisible_(<< 2::size(2), rest::bitstring >>), do: [@zws_2 | encode_as_invisible_(rest)]
-  # defp encode_as_invisible_(<< 3::size(2), rest::bitstring >>), do: [@zws_3 | encode_as_invisible_(rest)]
-  # defp encode_as_invisible_(<< >>), do: []
-
-
-  # def decode_id(@invisible_encoded_prefix <> rest) do
-  #   decode_bytes(rest)
-  # end
-
-
-  # defp decode_bytes(<<
-  #       e0::bytes-size(4),
-  #       e1::bytes-size(4),
-  #       e2::bytes-size(4),
-  #       e3::bytes-size(4),
-  #       e4::bytes-size(4),
-  #       e5::bytes-size(4),
-  #       e6::bytes-size(4),
-  #       e7::bytes-size(4),
-  #       _rest::bytes()
-  #     >>) do
-
-  #   [e0, e1, e2, e3, e4, e5, e6, e7]
-  #   |> Enum.map(&decode_byte/1)
-  #   |> :erlang.iolist_to_binary()
-  # end
-
-
-  # defp decode_2bits(?0), do: 0
-  # defp decode_2bits(?1), do: 1
-  # defp decode_2bits(?2), do: 2
-  # defp decode_2bits(?3), do: 3
-
-
-  # defp decode_byte(<<
-  #       e0::8,
-  #       e1::8,
-  #       e2::8,
-  #       e3::8
-  #     >>) do
-
-  #   d0 = decode_2bits(e0)
-  #   d1 = decode_2bits(e1)
-  #   d2 = decode_2bits(e2)
-  #   d3 = decode_2bits(e3)
-
-  #   <<d0::2, d1::2, d2::2, d3::2>>
-  # end
 end

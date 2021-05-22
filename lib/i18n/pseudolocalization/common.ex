@@ -24,6 +24,12 @@ defmodule I18n.Pseudolocalization.Common do
   # Pad the string with extra characters to simulate ~35% longer words
   @padding_characters "~"
 
+  # Create a parsec that will distinguish words from everything else
+  # so that we only expand the words and so that we handle punctuation
+  # in a natural way.
+  #
+  # We prefer "word~." instead of "word.~" (that's why we won't split blindly on whitespace)
+
   non_word_characters = String.to_charlist(".!?,;:«»\"`()[]{}")
   word_characters = Enum.map(non_word_characters, fn c -> {:not, c} end)
 

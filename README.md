@@ -1,5 +1,4 @@
 ![Logo](priv/logo.svg)
-# I18n
 
 The `I18n` module provides a way of localizing your application
 based on the [ICU message format](https://unicode-org.github.io/icu/).
@@ -24,7 +23,7 @@ The `I18n` application will be able to extract translatable strings from your
 application and all your dependencies, so that you can translate
 everything in a centralized place.
 
-With Gettext, there it's not possible to translate messages in dependencies,
+With Gettext, it's not possible to translate messages in dependencies,
 unless somehow the dependency provides you with an already created `.pot`
 file that you add to your application's, `.pot` files.
 ## Using I18n
@@ -66,20 +65,17 @@ This will import a `translate/2` macro into your module:
 ```elixir
 defmodule ExampleModule do
   use I18n
-  # Note that you don't need to require or import a I18n backend here.
-  # Just use the I18n library, and once a backend is configured
-  # it will automatically become aware of these messages
-  # (even if the messages exist in a different application)
 
   def f() do
     # A simple static translation
-    translate("Hello world!")
+    I18n.t("Hello world!")
   end
 
   def g(guest) do
     # A translation with a variable.
-    # This translation also contains a context (to disambiguate messages with the same text)
-    translate("Hello {guest}!", context: "a message", bindings: [guest: guest])
+    # This translation also contains a context
+    # (to disambiguate messages with the same text)
+    I18n.t("Hello {guest}!", context!: "a message", guest: guest)
   end
 end
 ```

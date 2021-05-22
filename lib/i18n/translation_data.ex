@@ -77,13 +77,7 @@ defmodule I18n.TranslationData do
     |> Enum.reject(fn value -> value == nil end)
   end
 
-  def count_messages(%__MODULE__{} = translation_data) do
-    map_size(translation_data.messages)
-  end
 
-  def untranslated_messages(%__MODULE__{} = translation_data) do
-    map_size(translation_data.messages)
-  end
 
   @doc """
   Deletes a locale from the translation data.
